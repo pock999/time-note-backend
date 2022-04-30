@@ -4,8 +4,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 
-const indexRouter = require('./api/routes/index');
-const usersRouter = require('./api/routes/users');
+const routes = require('./api/routes');
 
 const app = express();
 
@@ -17,6 +16,8 @@ const config = require('./config/config');
 const dayjs = require('dayjs');
 const _ = require('lodash');
 
+const bootstrap_data = require('./bootstrap_data');
+
 global.dayjs = dayjs;
 global._ = _;
 global.JsonReParse = (obj) => JSON.parse(JSON.stringify(obj));
@@ -26,7 +27,17 @@ global.config = config;
 
 dbModels.sequelize
   .sync(config.database.sync)
-  .then(async () => {})
+  .then(async () => {
+    console.log('=== sequelize.sync start ===');
+
+    if (config.bootstrapData === true) {
+      console.log('=== bootstrap data start ===');
+      await bootstrap_data();
+      console.log('=== bootstrap data end ===');
+    }
+
+    console.log('=== sequelize.sync end ===');
+  })
   .catch((err) => {
     console.log('error => ', err);
   });
@@ -44,8 +55,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
+app.use(cors(corsOptions));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/', routes);
 
 module.exports = app;

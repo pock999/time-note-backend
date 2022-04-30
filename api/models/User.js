@@ -39,9 +39,17 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  User.associate = function (models) {
-    User.hasMany(models.Note);
-    models.Note.belongsTo(User);
+  User.associate = function (models) {};
+
+  // classMethods
+  User.test = function () {
+    console.log('class methods: test()');
+  };
+
+  // instanceMethods
+  User.prototype.validatePassword = async function (plaintextPassword) {
+    const isVerify = await bcrypt.compare(plaintextPassword, this.password);
+    return isVerify;
   };
 
   return User;

@@ -37,10 +37,13 @@ module.exports = (sequelize, DataTypes) => {
     {
       // options
       paranoid: true,
-    },
+    }
   );
 
-  Note.associate = function (models) {};
+  Note.associate = function (models) {
+    models.User.hasMany(Note);
+    Note.belongsTo(models.User);
+  };
 
   return Note;
 };
