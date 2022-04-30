@@ -64,4 +64,24 @@ module.exports = {
       });
     }
   },
+
+  async Profile(req, res) {
+    try {
+      const { user } = req;
+
+      return res.status(200).json({
+        message: 'success',
+        statusCode: 200,
+        data: {
+          ..._.pick(user, ['id', 'email', 'name']),
+        },
+      });
+    } catch (e) {
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
 };
