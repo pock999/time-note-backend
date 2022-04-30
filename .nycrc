@@ -1,0 +1,13 @@
+{
+  "include": [
+    "api/controllers/AuthController.js"
+  ],
+  "reporter": [
+    "text"
+  ],
+  "check-coverage": true,  
+  "lines": 10,
+  "statements": 10,
+  "functions": 10,
+  "branches": 10
+}
