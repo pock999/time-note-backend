@@ -16,6 +16,8 @@ const callLogin = async ({ email, password }) => {
 
 describe('=== 登入 - POST /auth/login ===', () => {
   before(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
     await dbModels.User.destroy({ where: {}, truncate: true });
 
     await dbModels.User.create({
@@ -96,6 +98,8 @@ describe('=== 個人資料 - GET /auth/profile ===', () => {
   };
 
   before(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
     await dbModels.User.destroy({ where: {}, truncate: true });
 
     await dbModels.User.create(userData);
@@ -115,6 +119,46 @@ describe('=== 個人資料 - GET /auth/profile ===', () => {
     expect(res.statusCode).to.be.equal(200);
     expect(res.body.data.email).to.be.equal(userData.email);
     expect(res.body.data.name).to.be.equal(userData.name);
+  });
+
+  after(async function () {
+    await await dbModels.User.destroy({ where: {}, truncate: true });
+  });
+});
+
+describe('=== 個人資料 - PUT /auth/profile ===', () => {
+  const userData = {
+    name: '王小明',
+    email: 'ming1234@google.com',
+    password: 'abcd1234',
+  };
+
+  before(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
+    await dbModels.User.destroy({ where: {}, truncate: true });
+
+    await dbModels.User.create(userData);
+  });
+
+  it('- 只更新密碼', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    expect(authorizationToken).to.be.a('string');
+  });
+
+  it('- 只更新名子', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+  });
+
+  it('- 更新密碼及名子', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
   });
 
   after(async function () {

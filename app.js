@@ -28,15 +28,17 @@ global.config = config;
 dbModels.sequelize
   .sync(config.database.sync)
   .then(async () => {
-    console.log('=== sequelize.sync start ===');
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('=== sequelize.sync start ===');
 
-    if (config.bootstrapData === true) {
-      console.log('=== bootstrap data start ===');
-      await bootstrap_data();
-      console.log('=== bootstrap data end ===');
+      if (config.bootstrapData === true) {
+        console.log('=== bootstrap data start ===');
+        await bootstrap_data();
+        console.log('=== bootstrap data end ===');
+      }
+
+      console.log('=== sequelize.sync end ===');
     }
-
-    console.log('=== sequelize.sync end ===');
   })
   .catch((err) => {
     console.log('error => ', err);
