@@ -22,7 +22,7 @@ global.dayjs = dayjs;
 global._ = _;
 global.JsonReParse = (obj) => JSON.parse(JSON.stringify(obj));
 global.JsonSerialize = (obj) => JSON.stringify(obj);
-global.JsonParse = (obj) => JSON.stringify(obj);
+global.JsonParse = (obj) => JSON.parse(obj);
 global.config = config;
 
 dbModels.sequelize
