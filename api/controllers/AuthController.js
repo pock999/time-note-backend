@@ -84,4 +84,49 @@ module.exports = {
       });
     }
   },
+
+  async UpdateProfile(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        name: Joi.string(),
+        password: Joi.string(),
+      }).validate(req.body);
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      const { name, password } = value;
+
+      const { user } = req;
+
+      const findUser = await dbModels.User.findByPk(user.id);
+
+      if (name) {
+        findUser.name = name;
+      }
+
+      if (password) {
+        findUser.password = password;
+      }
+
+      await findUser.save();
+
+      return res.status(200).json({
+        message: 'success',
+        statusCode: 200,
+        data: {
+          ..._.pick(JsonReParse(findUser), ['id', 'email', 'name']),
+        },
+      });
+    } catch (e) {
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
 };
