@@ -133,7 +133,7 @@ describe('=== 個人資料 - PUT /auth/profile ===', () => {
     password: 'abcd1234',
   };
 
-  before(async () => {
+  beforeEach(async () => {
     await dbModels.sequelize.sync({ force: true, logging: false });
 
     await dbModels.User.destroy({ where: {}, truncate: true });
@@ -146,22 +146,110 @@ describe('=== 個人資料 - PUT /auth/profile ===', () => {
       ..._.pick(userData, ['email', 'password']),
     });
 
-    expect(authorizationToken).to.be.a('string');
+    let res = await request(app)
+      .put('/auth/profile')
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      })
+      .send({
+        password: 'newpassword',
+      });
+
+    expect(res.body.message).to.be.equal('success');
+
+    // 再次登入(使用舊密碼)
+    res = await request(app)
+      .post('/auth/login')
+      .send({
+        ..._.pick(userData, ['email', 'password']),
+      });
+
+    expect(res.body.message).to.be.equal('error');
+    expect(res.body.data.error).to.be.equal('password error');
+
+    // 再次登入(使用新密碼)
+    res = await request(app)
+      .post('/auth/login')
+      .send({
+        ..._.pick(userData, ['email']),
+        password: 'newpassword',
+      });
+
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+    expect(res.body.data.token).to.be.a('string');
+    expect(res.body.data.user.email).to.be.equal(userData.email);
   });
 
   it('- 只更新名子', async () => {
     const authorizationToken = await callLogin({
       ..._.pick(userData, ['email', 'password']),
     });
+
+    let res = await request(app)
+      .put('/auth/profile')
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      })
+      .send({
+        name: '新名字',
+      });
+
+    // 再次登入
+    res = await request(app)
+      .post('/auth/login')
+      .send({
+        ..._.pick(userData, ['email', 'password']),
+      });
+
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+    expect(res.body.data.token).to.be.a('string');
+    expect(res.body.data.user.email).to.be.equal(userData.email);
+    expect(res.body.data.user.name).to.be.equal('新名字');
   });
 
   it('- 更新密碼及名子', async () => {
     const authorizationToken = await callLogin({
       ..._.pick(userData, ['email', 'password']),
     });
+
+    let res = await request(app)
+      .put('/auth/profile')
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      })
+      .send({
+        name: '新名字',
+        password: 'newpassword',
+      });
+
+    // 再次登入(使用舊密碼)
+    res = await request(app)
+      .post('/auth/login')
+      .send({
+        ..._.pick(userData, ['email', 'password']),
+      });
+
+    expect(res.body.message).to.be.equal('error');
+    expect(res.body.data.error).to.be.equal('password error');
+
+    // 再次登入(使用新密碼)
+    res = await request(app)
+      .post('/auth/login')
+      .send({
+        ..._.pick(userData, ['email']),
+        password: 'newpassword',
+      });
+
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+    expect(res.body.data.token).to.be.a('string');
+    expect(res.body.data.user.email).to.be.equal(userData.email);
+    expect(res.body.data.user.name).to.be.equal('新名字');
   });
 
-  after(async function () {
+  afterEach(async function () {
     await await dbModels.User.destroy({ where: {}, truncate: true });
   });
 });
