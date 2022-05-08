@@ -236,4 +236,71 @@ module.exports = {
       });
     }
   },
+  async Update(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        id: Joi.number().integer().required(),
+
+        title: Joi.string().required(),
+        type: Joi.number().integer().required(),
+        content: Joi.string().required(),
+        startAt: Joi.date(),
+        endAt: Joi.date(),
+      }).validate({
+        ...req.params,
+        ...req.body,
+      });
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      const { user } = req;
+
+      const { id, title, type, content, startAt, endAt } = value;
+
+      const note = await dbModels.Note.findByPk(id);
+
+      if (!note) {
+        throw {
+          error: 'the note not found',
+        };
+      }
+
+      // TODO: 判斷type，決定 startAt, endAt 是否必要
+
+      // TODO: 若為提醒，startAt以及endAt不可以比now還以前
+
+      note.title = title;
+      note.type = type;
+      note.content = content;
+      note.startAt = startAt;
+      note.endAt = endAt;
+      await note.save();
+
+      const formatNote = JsonReParse(note);
+
+      return res.status(200).json({
+        message: 'success',
+        statusCode: 200,
+        data: {
+          ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
+          startAt: formatNote.startAt
+            ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+          endAt: formatNote.endAt
+            ? dayjs(formatNote.endAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+        },
+      });
+    } catch (e) {
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
 };

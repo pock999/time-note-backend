@@ -9,5 +9,6 @@ const isUser = require('../middlewares/isUser');
 router.post('/', jwtDecode, isUser, NoteController.Create);
 router.get('/list', jwtDecode, isUser, NoteController.List);
 router.get('/:id', jwtDecode, isUser, NoteController.Detail);
+router.put('/:id', jwtDecode, isUser, NoteController.Update);
 
 module.exports = router;
