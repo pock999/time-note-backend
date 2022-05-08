@@ -9,8 +9,6 @@
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "runtimeArgs": [
-        "-r",
-        "esm"
       ],
       "env": {
         "NODE_ENV": "development"
