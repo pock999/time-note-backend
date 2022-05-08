@@ -205,7 +205,12 @@ module.exports = {
 
       const { user } = req;
 
-      const note = await dbModels.Note.findByPk(id);
+      const note = await dbModels.Note.findOne({
+        where: {
+          id,
+          UserId: user.id,
+        },
+      });
 
       if (!note) {
         throw {
@@ -261,7 +266,12 @@ module.exports = {
 
       const { id, title, type, content, startAt, endAt } = value;
 
-      const note = await dbModels.Note.findByPk(id);
+      const note = await dbModels.Note.findOne({
+        where: {
+          id,
+          UserId: user.id,
+        },
+      });
 
       if (!note) {
         throw {
@@ -294,6 +304,55 @@ module.exports = {
             ? dayjs(formatNote.endAt).format('YYYY-MM-DD HH:mm:ss')
             : null,
         },
+      });
+    } catch (e) {
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
+  async Delete(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        id: Joi.number().integer().required(),
+      }).validate(req.params);
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      const { id } = value;
+
+      const { user } = req;
+
+      const note = await dbModels.Note.findOne({
+        where: {
+          id,
+          UserId: user.id,
+        },
+      });
+
+      if (!note) {
+        throw {
+          error: 'the note not found',
+        };
+      }
+
+      await dbModels.Note.destroy({
+        where: {
+          id,
+          UserId: user.id,
+        },
+      });
+
+      return res.status(200).json({
+        message: 'success',
+        statusCode: 200,
+        data: null,
       });
     } catch (e) {
       return res.status(500).json({
