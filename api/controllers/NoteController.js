@@ -189,4 +189,51 @@ module.exports = {
       });
     }
   },
+  async Detail(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        id: Joi.number().integer().required(),
+      }).validate(req.params);
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      const { id } = value;
+
+      const { user } = req;
+
+      const note = await dbModels.Note.findByPk(id);
+
+      if (!note) {
+        throw {
+          error: 'the note not found',
+        };
+      }
+
+      const formatNote = JsonReParse(note);
+
+      return res.status(200).json({
+        message: 'success',
+        statusCode: 200,
+        data: {
+          ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
+          startAt: formatNote.startAt
+            ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+          endAt: formatNote.endAt
+            ? dayjs(formatNote.endAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+        },
+      });
+    } catch (e) {
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
 };
