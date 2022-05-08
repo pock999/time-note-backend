@@ -61,8 +61,52 @@ describe('=== 新增note - GET /note/ ===', async () => {
       expect(res.body.data.endAt).to.be.equal('2022-05-05 19:00:00');
     });
 
-    it('- type: 2(行程(提醒))', async () => {});
+    it('- type: 2(行程(提醒))', async () => {
+      const res = await request(app)
+        .post('/note/')
+        .set({
+          Authorization: `Bearer ${authorizationToken}`,
+        })
+        .send({
+          title: '提醒',
+          type: 2,
+          content: '約會',
+          startAt: '2022-05-06 08:00:00',
+          endAt: '2022-05-06 19:00:00',
+        });
 
-    it('- type: 3(文章)', async () => {});
+      expect(res.statusCode).to.be.equal(200);
+      expect(res.body.message).to.be.equal('success');
+
+      expect(res.body.data.title).to.be.equal('提醒');
+      expect(res.body.data.type).to.be.equal(2);
+      expect(res.body.data.content).to.be.equal('約會');
+      expect(res.body.data.startAt).to.be.equal('2022-05-06 08:00:00');
+      expect(res.body.data.endAt).to.be.equal('2022-05-06 19:00:00');
+    });
+
+    it('- type: 3(文章)', async () => {
+      const res = await request(app)
+        .post('/note/')
+        .set({
+          Authorization: `Bearer ${authorizationToken}`,
+        })
+        .send({
+          title: '新文章標題',
+          type: 3,
+          content: '今天天氣真好',
+          startAt: '2022-05-06 11:20:00',
+          endAt: '2022-05-06 12:00:00',
+        });
+
+      expect(res.statusCode).to.be.equal(200);
+      expect(res.body.message).to.be.equal('success');
+
+      expect(res.body.data.title).to.be.equal('新文章標題');
+      expect(res.body.data.type).to.be.equal(3);
+      expect(res.body.data.content).to.be.equal('今天天氣真好');
+      expect(res.body.data.startAt).to.be.equal('2022-05-06 11:20:00');
+      expect(res.body.data.endAt).to.be.equal('2022-05-06 12:00:00');
+    });
   });
 });
