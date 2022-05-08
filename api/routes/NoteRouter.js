@@ -7,5 +7,6 @@ const jwtDecode = require('../middlewares/jwtDecode');
 const isUser = require('../middlewares/isUser');
 
 router.post('/', jwtDecode, isUser, NoteController.Create);
+router.get('/list', jwtDecode, isUser, NoteController.List);
 
 module.exports = router;
