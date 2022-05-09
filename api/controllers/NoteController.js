@@ -108,6 +108,12 @@ module.exports = {
           paging,
         });
       } else if (pageMode === 'calendar') {
+        if (!startAt || !endAt) {
+          throw {
+            error: 'startAt and endAt are required',
+          };
+        }
+
         const notes = await dbModels.Note.findAll({
           ...findAllParameter,
         });
@@ -157,9 +163,31 @@ module.exports = {
 
       const { user } = req;
 
-      // TODO: 判斷type，決定 startAt, endAt 是否必要
+      const { type, startAt, endAt } = value;
+      // 行程(提醒), startAt和endAt為必填欄位
+      if (type === 2 && (!startAt || !endAt)) {
+        throw {
+          error: 'startAt and endAt are required',
+        };
+      }
 
-      // TODO: 若為提醒，startAt以及endAt不可以比now還以前
+      // 行程(提醒), startAt以及endAt不可以比now還以前
+      if (type === 2 && (dayjs() > dayjs(startAt) || dayjs() > dayjs(endAt))) {
+        throw {
+          error: 'startAt and endAt are need later than now',
+        };
+      }
+
+      // 若startAt, endAt都有填寫，則確保大小為endAt >= startAt
+      if (!!startAt && !!endAt) {
+        if (dayjs(startAt) > dayjs(endAt)) {
+          throw {
+            error: 'endAt is need later than now',
+          };
+        }
+      }
+
+      // TODO: 若沒有startAt, endAt 可能要把 now 補進去
 
       const note = await dbModels.Note.create({
         ...value,
@@ -279,9 +307,28 @@ module.exports = {
         };
       }
 
-      // TODO: 判斷type，決定 startAt, endAt 是否必要
+      // 行程(提醒), startAt和endAt為必填欄位
+      if (type === 2 && (!startAt || !endAt)) {
+        throw {
+          error: 'startAt and endAt are required',
+        };
+      }
 
-      // TODO: 若為提醒，startAt以及endAt不可以比now還以前
+      // 行程(提醒), startAt以及endAt不可以比now還以前
+      if (type === 2 && (dayjs() > dayjs(startAt) || dayjs() > dayjs(endAt))) {
+        throw {
+          error: 'startAt and endAt are need later than now',
+        };
+      }
+
+      // 若startAt, endAt都有填寫，則確保大小為endAt >= startAt
+      if (!!startAt && !!endAt) {
+        if (dayjs(startAt) > dayjs(endAt)) {
+          throw {
+            error: 'endAt is need later than now',
+          };
+        }
+      }
 
       note.title = title;
       note.type = type;
