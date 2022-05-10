@@ -345,13 +345,115 @@ describe('=== 列表note - GET /note/list ===', async () => {
   });
 
   describe('# 獲取失敗', async () => {
-    it('- 無傳入分頁模式', async () => {});
-    it('- 傳入未定義分頁模式', async () => {});
+    it('- 無傳入分頁模式', async () => {
+      const authorizationToken = await callLogin({
+        ..._.pick(userData, ['email', 'password']),
+      });
+
+      const res = await request(app)
+        .get('/note/list')
+        .send({})
+        .set({
+          Authorization: `Bearer ${authorizationToken}`,
+        });
+
+      expect(res.statusCode).to.be.equal(500);
+      expect(res.body.message).to.be.equal('error');
+      expect(res.body.data.error).to.be.equal('"pageMode" is required');
+    });
+    it('- 傳入未定義分頁模式', async () => {
+      const authorizationToken = await callLogin({
+        ..._.pick(userData, ['email', 'password']),
+      });
+
+      const res = await request(app)
+        .get('/note/list?pageMode=fdkjge')
+        .send({})
+        .set({
+          Authorization: `Bearer ${authorizationToken}`,
+        });
+
+      expect(res.statusCode).to.be.equal(500);
+      expect(res.body.message).to.be.equal('error');
+      expect(res.body.data.error).to.be.equal('pageMode is not defined');
+    });
 
     describe('- 有分頁(calendar)', async () => {
-      it('- 缺少startAt', async () => {});
-      it('- 缺少endAt', async () => {});
-      it('- 缺少startAt 和 endAt', async () => {});
+      it('- 缺少startAt', async () => {
+        const monthLast = now
+          .month(now.month() + 1)
+          .date(1)
+          .hour(0)
+          .minute(0)
+          .second(0)
+          .subtract(1, 'second');
+
+        const authorizationToken = await callLogin({
+          ..._.pick(userData, ['email', 'password']),
+        });
+
+        const res = await request(app)
+          .get(
+            `/note/list?pageMode=calendar&endAt=${encodeURIComponent(
+              monthLast
+            )}`
+          )
+          .send({})
+          .set({
+            Authorization: `Bearer ${authorizationToken}`,
+          });
+        expect(res.statusCode).to.be.equal(500);
+        expect(res.body.message).to.be.equal('error');
+        expect(res.body.data.error).to.be.equal(
+          'startAt and endAt are required'
+        );
+      });
+      it('- 缺少endAt', async () => {
+        const monthStart = now
+          .month(now.month())
+          .date(1)
+          .hour(0)
+          .minute(0)
+          .second(0)
+          .subtract(1, 'second');
+
+        const authorizationToken = await callLogin({
+          ..._.pick(userData, ['email', 'password']),
+        });
+
+        const res = await request(app)
+          .get(
+            `/note/list?pageMode=calendar&startAt=${encodeURIComponent(
+              monthStart
+            )}`
+          )
+          .send({})
+          .set({
+            Authorization: `Bearer ${authorizationToken}`,
+          });
+        expect(res.statusCode).to.be.equal(500);
+        expect(res.body.message).to.be.equal('error');
+        expect(res.body.data.error).to.be.equal(
+          'startAt and endAt are required'
+        );
+      });
+      it('- 缺少startAt 和 endAt', async () => {
+        const authorizationToken = await callLogin({
+          ..._.pick(userData, ['email', 'password']),
+        });
+
+        const res = await request(app)
+          .get(`/note/list?pageMode=calendar`)
+          .send({})
+          .set({
+            Authorization: `Bearer ${authorizationToken}`,
+          });
+        expect(res.statusCode).to.be.equal(500);
+        expect(res.body.message).to.be.equal('error');
+        expect(res.body.data.error).to.be.equal(
+          'startAt and endAt are required'
+        );
+      });
     });
   });
 });
