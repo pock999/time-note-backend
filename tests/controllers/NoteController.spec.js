@@ -138,6 +138,8 @@ describe('=== 新增note - POST /note/ ===', async () => {
 });
 
 describe('=== 列表note - GET /note/list ===', async () => {
+  const now = dayjs();
+
   const userData = {
     name: '王小明',
     email: 'ming1234@google.com',
@@ -148,8 +150,8 @@ describe('=== 列表note - GET /note/list ===', async () => {
     title: `標題${i}`,
     type: (i % 3) + 1,
     content: i % 6 === 0 ? '' : `${i},,, ${i},,, ${i}`,
-    startAt: dayjs().subtract(7 + (30 - i), 'hour'),
-    endAt: dayjs().subtract(3 + (30 - i), 'hour'),
+    startAt: now.subtract(7 + (30 - i), 'hour'),
+    endAt: now.subtract(3 + (30 - i), 'hour'),
     UserId: 1,
   }));
 
@@ -251,8 +253,94 @@ describe('=== 列表note - GET /note/list ===', async () => {
     });
 
     describe('- 有分頁(calendar)', async () => {
-      it('- 獲取當個月', async () => {});
-      it('- 獲取當日', async () => {});
+      it('- 獲取當個月', async () => {
+        const monthStart = now
+          .month(now.month())
+          .date(1)
+          .hour(0)
+          .minute(0)
+          .second(0);
+
+        const monthLast = now
+          .month(now.month() + 1)
+          .date(1)
+          .hour(0)
+          .minute(0)
+          .second(0)
+          .subtract(1, 'second');
+
+        // 算原始資料有幾個
+        let innerCount = 0;
+        for (const note of notesData) {
+          if (note.startAt > monthStart && note.endAt < monthLast) {
+            innerCount += 1;
+          }
+        }
+
+        const authorizationToken = await callLogin({
+          ..._.pick(userData, ['email', 'password']),
+        });
+
+        const res = await request(app)
+          .get(
+            `/note/list?pageMode=calendar&startAt=${encodeURIComponent(
+              monthStart
+            )}&endAt=${encodeURIComponent(monthLast)}`
+          )
+          .send({})
+          .set({
+            Authorization: `Bearer ${authorizationToken}`,
+          });
+        expect(res.statusCode).to.be.equal(200);
+
+        // api 符合條件長度跟原始資料之符合條件長度比較
+        expect(res.body.data.length).to.be.equal(innerCount);
+        expect(res.body.message).to.be.equal('success');
+      });
+      it('- 獲取當日', async () => {
+        const dateStart = now
+          .month(now.month())
+          .date(now.date())
+          .hour(0)
+          .minute(0)
+          .second(0);
+
+        const dateLast = now
+          .month(now.month())
+          .date(now.date() + 1)
+          .hour(0)
+          .minute(0)
+          .second(0)
+          .subtract(1, 'second');
+
+        // 算原始資料有幾個
+        let innerCount = 0;
+        for (const note of notesData) {
+          if (note.startAt > dateStart && note.endAt < dateLast) {
+            innerCount += 1;
+          }
+        }
+
+        const authorizationToken = await callLogin({
+          ..._.pick(userData, ['email', 'password']),
+        });
+
+        const res = await request(app)
+          .get(
+            `/note/list?pageMode=calendar&startAt=${encodeURIComponent(
+              dateStart
+            )}&endAt=${encodeURIComponent(dateLast)}`
+          )
+          .send({})
+          .set({
+            Authorization: `Bearer ${authorizationToken}`,
+          });
+        expect(res.statusCode).to.be.equal(200);
+
+        // api 符合條件長度跟原始資料之符合條件長度比較
+        expect(res.body.data.length).to.be.equal(innerCount);
+        expect(res.body.message).to.be.equal('success');
+      });
     });
   });
 
