@@ -155,6 +155,8 @@ module.exports = {
         endAt: Joi.date(),
       }).validate(req.body);
 
+      const nowTime = dayjs();
+
       if (error) {
         throw {
           error: error.message,
@@ -187,10 +189,11 @@ module.exports = {
         }
       }
 
-      // TODO: 若沒有startAt, endAt 可能要把 now 補進去
-
       const note = await dbModels.Note.create({
-        ...value,
+        // 若沒有startAt, endAt 把 now 補進去
+        ..._.omit(value, ['startAt', 'endAt']),
+        ...(!startAt ? { startAt: nowTime } : { startAt }),
+        ...(!endAt ? { endAt: nowTime } : { endAt }),
         UserId: user.id,
       });
 
