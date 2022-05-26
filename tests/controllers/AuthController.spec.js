@@ -117,8 +117,8 @@ describe('=== 個人資料 - GET /auth/profile ===', () => {
       });
 
     expect(res.statusCode).to.be.equal(200);
-    expect(res.body.data.email).to.be.equal(userData.email);
-    expect(res.body.data.name).to.be.equal(userData.name);
+    expect(res.body.data.user.email).to.be.equal(userData.email);
+    expect(res.body.data.user.name).to.be.equal(userData.name);
   });
 
   after(async function () {

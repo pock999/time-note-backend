@@ -69,11 +69,16 @@ module.exports = {
     try {
       const { user } = req;
 
+      const token = jwt.sign(user, config.jwt.secret, {
+        expiresIn: config.jwt.expiresIn,
+      });
+
       return res.status(200).json({
         message: 'success',
         statusCode: 200,
         data: {
-          ..._.pick(user, ['id', 'email', 'name']),
+          user: { ..._.pick(user, ['id', 'email', 'name']) },
+          token,
         },
       });
     } catch (e) {
