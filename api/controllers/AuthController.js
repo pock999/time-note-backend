@@ -93,8 +93,8 @@ module.exports = {
   async UpdateProfile(req, res) {
     try {
       const { error, value } = Joi.object({
-        name: Joi.string(),
-        password: Joi.string(),
+        name: Joi.string().required(),
+        password: Joi.string().min(8),
       }).validate(req.body);
 
       if (error) {
