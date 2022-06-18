@@ -1,5 +1,6 @@
 const { expect } = require('chai');
 const request = require('supertest');
+const _ = require('lodash');
 
 const app = require('../../app');
 const dbModels = require('../../api/models');
@@ -152,6 +153,7 @@ describe('=== 個人資料 - PUT /auth/profile ===', () => {
         Authorization: `Bearer ${authorizationToken}`,
       })
       .send({
+        ..._.pick(userData, ['name']),
         password: 'newpassword',
       });
 
@@ -250,6 +252,78 @@ describe('=== 個人資料 - PUT /auth/profile ===', () => {
   });
 
   afterEach(async function () {
+    await await dbModels.User.destroy({ where: {}, truncate: true });
+  });
+});
+
+describe('=== 註冊 - POST /auth/register ===', () => {
+  before(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
+    await dbModels.User.destroy({ where: {}, truncate: true });
+
+    await dbModels.User.create({
+      name: '王小明',
+      email: 'ming123@google.com',
+      password: 'abcd1234',
+    });
+  });
+
+  it('- 重複Email', async () => {
+    const res = await request(app).post('/auth/register').send({
+      email: 'ming123@google.com',
+      password: 'password',
+      name: '測試',
+    });
+
+    expect(res.statusCode).to.be.equal(500);
+    expect(res.body.data.error).to.be.equal('email is duplicate');
+  });
+
+  it('- 少寫Email', async () => {
+    const res = await request(app).post('/auth/register').send({
+      password: 'password',
+      name: '測試',
+    });
+
+    expect(res.statusCode).to.be.equal(500);
+    expect(res.body.data.error).to.be.equal('"email" is required');
+  });
+
+  it('- 少寫密碼', async () => {
+    const res = await request(app).post('/auth/register').send({
+      email: 'new-user@test.com',
+      name: '測試',
+    });
+
+    expect(res.statusCode).to.be.equal(500);
+    expect(res.body.data.error).to.be.equal('"password" is required');
+  });
+
+  it('- 少寫名字', async () => {
+    const res = await request(app).post('/auth/register').send({
+      email: 'new-user@test.com',
+      password: 'password',
+    });
+
+    expect(res.statusCode).to.be.equal(500);
+    expect(res.body.data.error).to.be.equal('"name" is required');
+  });
+
+  it('- 註冊成功', async () => {
+    const res = await request(app).post('/auth/register').send({
+      email: 'new-user@test.com',
+      password: 'password',
+      name: '測試',
+    });
+
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+    expect(res.body.data.email).to.be.equal('new-user@test.com');
+    expect(res.body.data.name).to.be.equal('測試');
+  });
+
+  after(async function () {
     await await dbModels.User.destroy({ where: {}, truncate: true });
   });
 });

@@ -17,6 +17,11 @@ module.exports = (sequelize, DataTypes) => {
       name: {
         type: DataTypes.STRING,
       },
+      // 重設密碼時的token
+      resetToken: {
+        type: DataTypes.STRING(2000),
+        allowNull: true,
+      },
     },
     {
       // options

@@ -134,4 +134,110 @@ module.exports = {
       });
     }
   },
+
+  async Register(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        email: Joi.string().required(),
+        name: Joi.string().required(),
+        password: Joi.string().min(8).required(),
+      }).validate(req.body);
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      const { email, password, name } = value;
+
+      const isDuplicate = await dbModels.User.count({
+        where: {
+          email,
+        },
+      });
+
+      if (isDuplicate) {
+        throw { error: 'email is duplicate' };
+      }
+
+      // TODO: 註冊信
+
+      let user = await dbModels.User.create({
+        name,
+        email,
+        password,
+      });
+
+      user = {
+        ..._.pick(JsonReParse(user), ['id', 'email', 'name']),
+      };
+
+      return res.status(200).json({
+        message: 'success',
+        statusCode: 200,
+        data: user,
+      });
+    } catch (e) {
+      console.log('error => ', e);
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
+
+  // 忘記密碼
+  async ForgotPassword(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        email: Joi.string().required(),
+      }).validate(req.body);
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      // TODO: find by email
+
+      // TODO: sign 一組大約 15m 的 jwtToken
+    } catch (e) {
+      console.log('error => ', e);
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
+
+  // 忘記密碼後收信進入重設密碼
+  async ResetPasssword(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        password: Joi.string().min(8).required(),
+        token: Joi.string().required(),
+      }).validate(req.body);
+
+      if (error) {
+        throw {
+          error: error.message,
+        };
+      }
+
+      // TODO: 檢查token是否過期
+
+      // TODO: reset password
+    } catch (e) {
+      console.log('error => ', e);
+      return res.status(500).json({
+        message: 'error',
+        statusCode: 500,
+        data: e,
+      });
+    }
+  },
 };
