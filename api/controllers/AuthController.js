@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 
 const dbModels = require('../models');
 
+const MailService = require('../services/MailService');
+
 module.exports = {
   async Login(req, res) {
     try {

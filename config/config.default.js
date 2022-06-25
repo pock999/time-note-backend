@@ -23,4 +23,10 @@ module.exports = {
     secret: 'secret',
     expiresIn: '15m', // 15分
   },
+
+  mail: {
+    isActivate: false,
+    email: '<email account>',
+    password: '<email password>',
+  },
 };
