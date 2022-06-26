@@ -16,6 +16,9 @@ const config = require('./config/config');
 const dayjs = require('dayjs');
 const _ = require('lodash');
 
+// middlewares
+const response = require('./api/middlewares/response');
+
 const bootstrap_data = require('./bootstrap_data');
 
 global.dayjs = dayjs;
@@ -59,6 +62,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
+app.use(response);
 app.use('/', routes);
 
 module.exports = app;

@@ -49,9 +49,8 @@ module.exports = {
         expiresIn: config.jwt.expiresIn,
       });
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: {
           token,
           user,
@@ -59,11 +58,7 @@ module.exports = {
       });
     } catch (e) {
       console.log('error => ', e);
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 
