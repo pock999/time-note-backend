@@ -13,19 +13,15 @@ module.exports = async (req, res, next) => {
     });
 
     if (!user) {
-      throw {
-        error: 'user not found',
-      };
+      throw ReturnMsg.AUTH.USER_NO_PERMISSION({
+        error: 'the user not found',
+      });
     }
 
     req.user = JsonReParse(user);
 
     next();
   } catch (e) {
-    return res.status(401).json({
-      message: 'user not login',
-      statusCode: 401,
-      data: e,
-    });
+    return res.error(e);
   }
 };

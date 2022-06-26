@@ -14,9 +14,9 @@ module.exports = {
       }).validate(req.body);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { email, password } = value;
@@ -28,17 +28,17 @@ module.exports = {
       });
 
       if (!user) {
-        throw {
+        throw ReturnMsg.AUTH.USER_NOT_FOUND({
           error: 'the user not found',
-        };
+        });
       }
 
       const isVerify = await user.validatePassword(password);
 
       if (!isVerify) {
-        throw {
+        throw ReturnMsg.AUTH.INVALID_PASSWORD({
           error: 'password error',
-        };
+        });
       }
 
       user = {
@@ -70,20 +70,15 @@ module.exports = {
         expiresIn: config.jwt.expiresIn,
       });
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: {
           user: { ..._.pick(user, ['id', 'email', 'name']) },
           token,
         },
       });
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 
@@ -95,9 +90,9 @@ module.exports = {
       }).validate(req.body);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { name, password } = value;
@@ -116,19 +111,14 @@ module.exports = {
 
       await findUser.save();
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: {
           ..._.pick(JsonReParse(findUser), ['id', 'email', 'name']),
         },
       });
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 
@@ -141,9 +131,9 @@ module.exports = {
       }).validate(req.body);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { email, password, name } = value;
@@ -155,7 +145,9 @@ module.exports = {
       });
 
       if (isDuplicate) {
-        throw { error: 'email is duplicate' };
+        throw ReturnMsg.AUTH.EMAIL_HAS_EXISTED({
+          error: 'email is duplicate',
+        });
       }
 
       // TODO: 註冊信
@@ -170,18 +162,13 @@ module.exports = {
         ..._.pick(JsonReParse(user), ['id', 'email', 'name']),
       };
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: user,
       });
     } catch (e) {
       console.log('error => ', e);
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 
@@ -193,9 +180,9 @@ module.exports = {
       }).validate(req.body);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       // TODO: find by email
@@ -203,11 +190,7 @@ module.exports = {
       // TODO: sign 一組大約 15m 的 jwtToken
     } catch (e) {
       console.log('error => ', e);
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 
@@ -220,9 +203,9 @@ module.exports = {
       }).validate(req.body);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       // TODO: 檢查token是否過期
@@ -230,11 +213,7 @@ module.exports = {
       // TODO: reset password
     } catch (e) {
       console.log('error => ', e);
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 };

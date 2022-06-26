@@ -15,6 +15,7 @@ const config = require('./config/config');
 // global
 const dayjs = require('dayjs');
 const _ = require('lodash');
+const ReturnMsg = require('./api/enums/return-messages');
 
 // middlewares
 const response = require('./api/middlewares/response');
@@ -27,6 +28,7 @@ global.JsonReParse = (obj) => JSON.parse(JSON.stringify(obj));
 global.JsonSerialize = (obj) => JSON.stringify(obj);
 global.JsonParse = (obj) => JSON.parse(obj);
 global.config = config;
+global.ReturnMsg = ReturnMsg;
 
 dbModels.sequelize
   .sync(config.database.sync)

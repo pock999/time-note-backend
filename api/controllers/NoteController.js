@@ -27,9 +27,9 @@ module.exports = {
       const { user } = req;
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { pageMode, page, sort, pageSize, startAt, endAt } = value;
@@ -94,7 +94,7 @@ module.exports = {
 
         const formatNotes = JsonReParse(notes);
 
-        return res.status(200).json({
+        return res.ok({
           message: 'success',
           data: formatNotes.map((note) => ({
             ..._.pick(note, ['id', 'title', 'content', 'type']),
@@ -109,9 +109,9 @@ module.exports = {
         });
       } else if (pageMode === 'calendar') {
         if (!startAt || !endAt) {
-          throw {
+          throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
             error: 'startAt and endAt are required',
-          };
+          });
         }
 
         const notes = await dbModels.Note.findAll({
@@ -120,7 +120,7 @@ module.exports = {
 
         const formatNotes = JsonReParse(notes);
 
-        return res.status(200).json({
+        return res.ok({
           message: 'success',
           data: formatNotes.map((note) => ({
             ..._.pick(note, ['id', 'title', 'content', 'type']),
@@ -133,16 +133,12 @@ module.exports = {
           })),
         });
       } else {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: 'pageMode is not defined',
-        };
+        });
       }
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
   async Create(req, res) {
@@ -158,9 +154,9 @@ module.exports = {
       const nowTime = dayjs();
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { user } = req;
@@ -168,24 +164,24 @@ module.exports = {
       const { type, startAt, endAt } = value;
       // 行程(提醒), startAt和endAt為必填欄位
       if (type === 2 && (!startAt || !endAt)) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: 'startAt and endAt are required',
-        };
+        });
       }
 
       // 行程(提醒), startAt以及endAt不可以比now還以前
       if (type === 2 && (dayjs() > dayjs(startAt) || dayjs() > dayjs(endAt))) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: 'startAt and endAt are need later than now',
-        };
+        });
       }
 
       // 若startAt, endAt都有填寫，則確保大小為endAt >= startAt
       if (!!startAt && !!endAt) {
         if (dayjs(startAt) > dayjs(endAt)) {
-          throw {
+          throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
             error: 'endAt is need later than now',
-          };
+          });
         }
       }
 
@@ -199,9 +195,8 @@ module.exports = {
 
       const formatNote = JsonReParse(note);
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: {
           ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
           startAt: formatNote.startAt
@@ -227,9 +222,9 @@ module.exports = {
       }).validate(req.params);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { id } = value;
@@ -244,16 +239,15 @@ module.exports = {
       });
 
       if (!note) {
-        throw {
+        throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
           error: 'the note not found',
-        };
+        });
       }
 
       const formatNote = JsonReParse(note);
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: {
           ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
           startAt: formatNote.startAt
@@ -265,11 +259,7 @@ module.exports = {
         },
       });
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
   async Update(req, res) {
@@ -288,9 +278,9 @@ module.exports = {
       });
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { user } = req;
@@ -305,31 +295,31 @@ module.exports = {
       });
 
       if (!note) {
-        throw {
+        throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
           error: 'the note not found',
-        };
+        });
       }
 
       // 行程(提醒), startAt和endAt為必填欄位
       if (type === 2 && (!startAt || !endAt)) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: 'startAt and endAt are required',
-        };
+        });
       }
 
       // 行程(提醒), startAt以及endAt不可以比now還以前
       if (type === 2 && (dayjs() > dayjs(startAt) || dayjs() > dayjs(endAt))) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: 'startAt and endAt are need later than now',
-        };
+        });
       }
 
       // 若startAt, endAt都有填寫，則確保大小為endAt >= startAt
       if (!!startAt && !!endAt) {
         if (dayjs(startAt) > dayjs(endAt)) {
-          throw {
+          throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
             error: 'endAt is need later than now',
-          };
+          });
         }
       }
 
@@ -342,9 +332,8 @@ module.exports = {
 
       const formatNote = JsonReParse(note);
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: {
           ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
           startAt: formatNote.startAt
@@ -356,11 +345,7 @@ module.exports = {
         },
       });
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
   async Delete(req, res) {
@@ -370,9 +355,9 @@ module.exports = {
       }).validate(req.params);
 
       if (error) {
-        throw {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
           error: error.message,
-        };
+        });
       }
 
       const { id } = value;
@@ -387,9 +372,9 @@ module.exports = {
       });
 
       if (!note) {
-        throw {
+        throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
           error: 'the note not found',
-        };
+        });
       }
 
       await dbModels.Note.destroy({
@@ -399,17 +384,12 @@ module.exports = {
         },
       });
 
-      return res.status(200).json({
+      return res.ok({
         message: 'success',
-        statusCode: 200,
         data: null,
       });
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      return res.error(e);
     }
   },
 };

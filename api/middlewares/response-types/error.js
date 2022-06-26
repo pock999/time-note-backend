@@ -7,27 +7,27 @@ module.exports = (req, res, error) => {
       switch (error.code) {
         case 400:
           return res.badReq({
-            message: _.get(error, 'message') || 'BAD_REQUEST',
+            type: _.get(error, 'type') || 'BadRequest',
             payload: _.get(error, 'payload') || {},
           });
         case 401:
           return res.unAuth({
-            message: _.get(error, 'message') || 'UNAUTHORIZED',
+            type: _.get(error, 'type') || 'UnAuthorized',
             payload: _.get(error, 'payload') || {},
           });
         case 403:
           return res.forbidden({
-            message: _.get(error, 'message') || 'FORBIDDEN',
+            type: _.get(error, 'type') || 'Forbidden',
             payload: _.get(error, 'payload') || {},
           });
         case 404:
           return res.notFound({
-            message: _.get(error, 'message') || 'NOT_FOUND',
+            type: _.get(error, 'type') || 'NotFound',
             payload: _.get(error, 'payload') || {},
           });
         case 500:
           return res.notFound({
-            message: _.get(error, 'message') || 'SERVER_ERROR',
+            type: _.get(error, 'type') || 'ServerError',
             payload: _.get(error, 'payload') || {},
           });
         default: {
@@ -41,7 +41,7 @@ module.exports = (req, res, error) => {
       error.name === 'SequelizeValidationError'
     ) {
       return res.badReq({
-        message: 'BAD_REQUEST.UNIQUE.CONSTRAINT',
+        type: 'BadRequest.Unique.Constraint',
         payload: error,
       });
     }

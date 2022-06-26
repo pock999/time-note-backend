@@ -19,18 +19,16 @@ module.exports = async (req, res, next) => {
 
     next();
   } catch (e) {
-    if (e instanceof TokenExpiredError) {
-      return res.status(401).json({
-        message: 'Unauthorized',
-        statusCode: 401,
-        data: 'token expired',
-      });
-    }
+    // if (e instanceof TokenExpiredError) {
+    //   return res.error(ReturnMsg.AUTH.USER_TOKEN_EXPIRED({
+    //     error: 'token expired',
+    //   }))
+    // }
 
-    return res.status(401).json({
-      message: 'Unauthorized',
-      statusCode: 401,
-      data: e,
-    });
+    return res.error(
+      ReturnMsg.AUTH.USER_TOKEN_EXPIRED({
+        error: 'token expired',
+      })
+    );
   }
 };
