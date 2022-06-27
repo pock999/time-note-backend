@@ -49,14 +49,14 @@ module.exports = {
     TARGET_NOT_FOUND: (obj) => ({
       message: 'NotFound.Target.Not.Found',
       code: 404,
-      obj,
+      payload: obj,
     }),
   },
   BAD_REQUEST: {
     PARAMETER_FORMAT_INVALID: (obj) => ({
       message: 'BadRequest.Parameter.Format.Invalid',
       code: 400,
-      obj,
+      payload: obj,
     }),
   },
   ERROR: {},

@@ -357,9 +357,8 @@ describe('=== 列表note - GET /note/list ===', async () => {
           Authorization: `Bearer ${authorizationToken}`,
         });
 
-      expect(res.statusCode).to.be.equal(500);
-      expect(res.body.message).to.be.equal('error');
-      expect(res.body.data.error).to.be.equal('"pageMode" is required');
+      expect(res.statusCode).to.be.equal(400);
+      expect(res.body.payload.error).to.be.equal('"pageMode" is required');
     });
     it('- 傳入未定義分頁模式', async () => {
       const authorizationToken = await callLogin({
@@ -373,9 +372,8 @@ describe('=== 列表note - GET /note/list ===', async () => {
           Authorization: `Bearer ${authorizationToken}`,
         });
 
-      expect(res.statusCode).to.be.equal(500);
-      expect(res.body.message).to.be.equal('error');
-      expect(res.body.data.error).to.be.equal('pageMode is not defined');
+      expect(res.statusCode).to.be.equal(400);
+      expect(res.body.payload.error).to.be.equal('pageMode is not defined');
     });
 
     describe('- 有分頁(calendar)', async () => {
@@ -402,9 +400,8 @@ describe('=== 列表note - GET /note/list ===', async () => {
           .set({
             Authorization: `Bearer ${authorizationToken}`,
           });
-        expect(res.statusCode).to.be.equal(500);
-        expect(res.body.message).to.be.equal('error');
-        expect(res.body.data.error).to.be.equal(
+        expect(res.statusCode).to.be.equal(400);
+        expect(res.body.payload.error).to.be.equal(
           'startAt and endAt are required'
         );
       });
@@ -431,9 +428,8 @@ describe('=== 列表note - GET /note/list ===', async () => {
           .set({
             Authorization: `Bearer ${authorizationToken}`,
           });
-        expect(res.statusCode).to.be.equal(500);
-        expect(res.body.message).to.be.equal('error');
-        expect(res.body.data.error).to.be.equal(
+        expect(res.statusCode).to.be.equal(400);
+        expect(res.body.payload.error).to.be.equal(
           'startAt and endAt are required'
         );
       });
@@ -448,9 +444,9 @@ describe('=== 列表note - GET /note/list ===', async () => {
           .set({
             Authorization: `Bearer ${authorizationToken}`,
           });
-        expect(res.statusCode).to.be.equal(500);
-        expect(res.body.message).to.be.equal('error');
-        expect(res.body.data.error).to.be.equal(
+        expect(res.statusCode).to.be.equal(400);
+
+        expect(res.body.payload.error).to.be.equal(
           'startAt and endAt are required'
         );
       });

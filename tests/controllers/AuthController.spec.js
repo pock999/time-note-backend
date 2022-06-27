@@ -35,8 +35,8 @@ describe('=== 登入 - POST /auth/login ===', () => {
         password: 'abcd1234',
       });
 
-      expect(res.statusCode).to.be.equal(500);
-      expect(res.body.data.error).to.be.equal(
+      expect(res.statusCode).to.be.equal(400);
+      expect(res.body.payload.error).to.be.equal(
         '"email" is not allowed to be empty'
       );
     });
@@ -47,8 +47,8 @@ describe('=== 登入 - POST /auth/login ===', () => {
         password: '',
       });
 
-      expect(res.statusCode).to.be.equal(500);
-      expect(res.body.data.error).to.be.equal(
+      expect(res.statusCode).to.be.equal(400);
+      expect(res.body.payload.error).to.be.equal(
         '"password" is not allowed to be empty'
       );
     });
@@ -60,8 +60,8 @@ describe('=== 登入 - POST /auth/login ===', () => {
       password: '123erwerew',
     });
 
-    expect(res.statusCode).to.be.equal(500);
-    expect(res.body.data.error).to.be.equal('the user not found');
+    expect(res.statusCode).to.be.equal(403);
+    expect(res.body.payload.error).to.be.equal('the user not found');
   });
 
   it('- 錯誤密碼', async () => {
@@ -70,8 +70,8 @@ describe('=== 登入 - POST /auth/login ===', () => {
       password: '123erwerew',
     });
 
-    expect(res.statusCode).to.be.equal(500);
-    expect(res.body.data.error).to.be.equal('password error');
+    expect(res.statusCode).to.be.equal(403);
+    expect(res.body.payload.error).to.be.equal('password error');
   });
 
   it('- 正確帳密', async () => {
@@ -166,8 +166,7 @@ describe('=== 個人資料 - PUT /auth/profile ===', () => {
         ..._.pick(userData, ['email', 'password']),
       });
 
-    expect(res.body.message).to.be.equal('error');
-    expect(res.body.data.error).to.be.equal('password error');
+    expect(res.body.payload.error).to.be.equal('password error');
 
     // 再次登入(使用新密碼)
     res = await request(app)
@@ -233,8 +232,7 @@ describe('=== 個人資料 - PUT /auth/profile ===', () => {
         ..._.pick(userData, ['email', 'password']),
       });
 
-    expect(res.body.message).to.be.equal('error');
-    expect(res.body.data.error).to.be.equal('password error');
+    expect(res.body.payload.error).to.be.equal('password error');
 
     // 再次登入(使用新密碼)
     res = await request(app)
@@ -276,8 +274,8 @@ describe('=== 註冊 - POST /auth/register ===', () => {
       name: '測試',
     });
 
-    expect(res.statusCode).to.be.equal(500);
-    expect(res.body.data.error).to.be.equal('email is duplicate');
+    expect(res.statusCode).to.be.equal(400);
+    expect(res.body.payload.error).to.be.equal('email is duplicate');
   });
 
   it('- 少寫Email', async () => {
@@ -286,8 +284,8 @@ describe('=== 註冊 - POST /auth/register ===', () => {
       name: '測試',
     });
 
-    expect(res.statusCode).to.be.equal(500);
-    expect(res.body.data.error).to.be.equal('"email" is required');
+    expect(res.statusCode).to.be.equal(400);
+    expect(res.body.payload.error).to.be.equal('"email" is required');
   });
 
   it('- 少寫密碼', async () => {
@@ -296,8 +294,8 @@ describe('=== 註冊 - POST /auth/register ===', () => {
       name: '測試',
     });
 
-    expect(res.statusCode).to.be.equal(500);
-    expect(res.body.data.error).to.be.equal('"password" is required');
+    expect(res.statusCode).to.be.equal(400);
+    expect(res.body.payload.error).to.be.equal('"password" is required');
   });
 
   it('- 少寫名字', async () => {
@@ -306,8 +304,8 @@ describe('=== 註冊 - POST /auth/register ===', () => {
       password: 'password',
     });
 
-    expect(res.statusCode).to.be.equal(500);
-    expect(res.body.data.error).to.be.equal('"name" is required');
+    expect(res.statusCode).to.be.equal(400);
+    expect(res.body.payload.error).to.be.equal('"name" is required');
   });
 
   it('- 註冊成功', async () => {
