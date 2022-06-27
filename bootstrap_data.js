@@ -9,6 +9,29 @@ module.exports = async () => {
     password: 'abcd1234',
   });
 
+  const CategoriesName = [
+    {
+      name: '重要',
+    },
+    {
+      name: '待辦',
+    },
+    {
+      name: '閱讀清單',
+    },
+  ];
+
+  const categoryIds = [];
+
+  CategoriesName.map(async (cate) => {
+    const category = await dbModels.Category.create({
+      ...cate,
+      UserId: user1.id,
+    });
+
+    categoryIds.push(category.id);
+  });
+
   const ii = Array.from({ length: 24 }, (_, i) => i + 1);
 
   const now = dayjs();
@@ -21,6 +44,7 @@ module.exports = async () => {
       startAt: now.subtract(7 + (30 - i), 'hour'),
       endAt: now.subtract(3 + (30 - i), 'hour'),
       UserId: user1.id,
+      CategoryId: categoryIds[i % 3],
     });
   }
 };
