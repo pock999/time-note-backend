@@ -172,13 +172,13 @@ describe('=== 列表note - GET /note/list ===', async () => {
     await await dbModels.Note.destroy({ where: {}, truncate: true });
   });
   describe('# 獲取成功', async () => {
-    it('- 無分頁', async () => {
+    it('- 無條件', async () => {
       const authorizationToken = await callLogin({
         ..._.pick(userData, ['email', 'password']),
       });
 
       const res = await request(app)
-        .get('/note/list?pageMode=list')
+        .get('/note/list')
         .send({})
         .set({
           Authorization: `Bearer ${authorizationToken}`,
@@ -189,70 +189,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
       expect(res.body.message).to.be.equal('success');
     });
 
-    describe('- 有分頁(list)', async () => {
-      it('- 每頁10筆數', async () => {
-        const authorizationToken = await callLogin({
-          ..._.pick(userData, ['email', 'password']),
-        });
-
-        let res = await request(app)
-          .get('/note/list?pageMode=list&page=1&pageSize=10')
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(200);
-        expect(res.body.data.length).to.be.equal(10);
-        expect(res.body.message).to.be.equal('success');
-
-        res = await request(app)
-          .get('/note/list?pageMode=list&page=2&pageSize=10')
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(200);
-        expect(res.body.data.length).to.be.equal(10);
-        expect(res.body.message).to.be.equal('success');
-
-        res = await request(app)
-          .get('/note/list?pageMode=list&page=3&pageSize=10')
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(200);
-        expect(res.body.data.length).to.be.equal(5);
-        expect(res.body.message).to.be.equal('success');
-      });
-      it('- 每頁20筆數', async () => {
-        const authorizationToken = await callLogin({
-          ..._.pick(userData, ['email', 'password']),
-        });
-
-        let res = await request(app)
-          .get('/note/list?pageMode=list&page=1&pageSize=20')
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(200);
-        expect(res.body.data.length).to.be.equal(20);
-        expect(res.body.message).to.be.equal('success');
-
-        res = await request(app)
-          .get('/note/list?pageMode=list&page=2&pageSize=20')
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(200);
-        expect(res.body.data.length).to.be.equal(5);
-        expect(res.body.message).to.be.equal('success');
-      });
-    });
-
-    describe('- 有分頁(calendar)', async () => {
+    describe('- 有條件', async () => {
       it('- 獲取當個月', async () => {
         const monthStart = now
           .month(now.month())
@@ -283,7 +220,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
 
         const res = await request(app)
           .get(
-            `/note/list?pageMode=calendar&startAt=${encodeURIComponent(
+            `/note/list?startAt=${encodeURIComponent(
               monthStart
             )}&endAt=${encodeURIComponent(monthLast)}`
           )
@@ -327,7 +264,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
 
         const res = await request(app)
           .get(
-            `/note/list?pageMode=calendar&startAt=${encodeURIComponent(
+            `/note/list?startAt=${encodeURIComponent(
               dateStart
             )}&endAt=${encodeURIComponent(dateLast)}`
           )
@@ -340,115 +277,6 @@ describe('=== 列表note - GET /note/list ===', async () => {
         // api 符合條件長度跟原始資料之符合條件長度比較
         expect(res.body.data.length).to.be.equal(innerCount);
         expect(res.body.message).to.be.equal('success');
-      });
-    });
-  });
-
-  describe('# 獲取失敗', async () => {
-    it('- 無傳入分頁模式', async () => {
-      const authorizationToken = await callLogin({
-        ..._.pick(userData, ['email', 'password']),
-      });
-
-      const res = await request(app)
-        .get('/note/list')
-        .send({})
-        .set({
-          Authorization: `Bearer ${authorizationToken}`,
-        });
-
-      expect(res.statusCode).to.be.equal(400);
-      expect(res.body.payload.error).to.be.equal('"pageMode" is required');
-    });
-    it('- 傳入未定義分頁模式', async () => {
-      const authorizationToken = await callLogin({
-        ..._.pick(userData, ['email', 'password']),
-      });
-
-      const res = await request(app)
-        .get('/note/list?pageMode=fdkjge')
-        .send({})
-        .set({
-          Authorization: `Bearer ${authorizationToken}`,
-        });
-
-      expect(res.statusCode).to.be.equal(400);
-      expect(res.body.payload.error).to.be.equal('pageMode is not defined');
-    });
-
-    describe('- 有分頁(calendar)', async () => {
-      it('- 缺少startAt', async () => {
-        const monthLast = now
-          .month(now.month() + 1)
-          .date(1)
-          .hour(0)
-          .minute(0)
-          .second(0)
-          .subtract(1, 'second');
-
-        const authorizationToken = await callLogin({
-          ..._.pick(userData, ['email', 'password']),
-        });
-
-        const res = await request(app)
-          .get(
-            `/note/list?pageMode=calendar&endAt=${encodeURIComponent(
-              monthLast
-            )}`
-          )
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(400);
-        expect(res.body.payload.error).to.be.equal(
-          'startAt and endAt are required'
-        );
-      });
-      it('- 缺少endAt', async () => {
-        const monthStart = now
-          .month(now.month())
-          .date(1)
-          .hour(0)
-          .minute(0)
-          .second(0)
-          .subtract(1, 'second');
-
-        const authorizationToken = await callLogin({
-          ..._.pick(userData, ['email', 'password']),
-        });
-
-        const res = await request(app)
-          .get(
-            `/note/list?pageMode=calendar&startAt=${encodeURIComponent(
-              monthStart
-            )}`
-          )
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(400);
-        expect(res.body.payload.error).to.be.equal(
-          'startAt and endAt are required'
-        );
-      });
-      it('- 缺少startAt 和 endAt', async () => {
-        const authorizationToken = await callLogin({
-          ..._.pick(userData, ['email', 'password']),
-        });
-
-        const res = await request(app)
-          .get(`/note/list?pageMode=calendar`)
-          .send({})
-          .set({
-            Authorization: `Bearer ${authorizationToken}`,
-          });
-        expect(res.statusCode).to.be.equal(400);
-
-        expect(res.body.payload.error).to.be.equal(
-          'startAt and endAt are required'
-        );
       });
     });
   });

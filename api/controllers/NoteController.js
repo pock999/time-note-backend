@@ -3,22 +3,20 @@ const { Op } = require('sequelize');
 
 const dbModels = require('../models');
 
+const NoteType = require('../enums/NoteType');
 const PageHelper = require('../services/PageHelper');
 
 module.exports = {
   async List(req, res) {
     try {
       const { error, value } = Joi.object({
-        pageMode: Joi.string().required(), // 普通列表(需分頁) | 按時間起迄
-
-        // 需分頁
-        page: Joi.number().allow(null), // 第幾頁
-        pageSize: Joi.number().allow(null), // 每頁顯示資料數量
-        sort: Joi.string().allow(null), // 多欄位排序，例: 'id+desc,updatedAt+desc'
-
         // 按時間起迄
         startAt: Joi.date(),
         endAt: Joi.date(),
+        type: Joi.number()
+          .integer()
+          .valid(..._.map(NoteType, 'value')),
+        CategoryId: Joi.number().integer(),
       }).validate({
         ...req.body,
         ...req.query,
@@ -32,7 +30,7 @@ module.exports = {
         });
       }
 
-      const { pageMode, page, sort, pageSize, startAt, endAt } = value;
+      const { startAt, endAt, type, CategoryId } = value;
 
       const where = {};
       const order = [];
@@ -40,6 +38,7 @@ module.exports = {
       const findAllParameter = {
         where,
         order,
+        include: [{ model: dbModels.Category }],
       };
 
       where.UserId = user.id;
@@ -56,87 +55,35 @@ module.exports = {
         };
       }
 
-      if (pageMode === 'list') {
-        // 排序
-        if (sort) {
-          const newOrder = await PageHelper.sorter({
-            sort,
-            modelForSort: RepairForm,
-          });
-          //
-          // 改為新的多欄位排序方式
-          //
-          if (newOrder && newOrder.length > 0) {
-            findAllParameter.order = newOrder;
-          }
-        } else {
-          findAllParameter.order.push(['id', 'desc']);
-        }
-
-        // 分頁
-        if (page && pageSize) {
-          const { offset, limit } = await PageHelper.paginater({
-            page,
-            pageSize,
-          });
-          findAllParameter.offset = offset;
-          findAllParameter.limit = limit;
-        }
-
-        const { count, rows: notes } = await dbModels.Note.findAndCountAll({
-          ...findAllParameter,
-        });
-
-        let paging;
-        if (page && pageSize) {
-          paging = await PageHelper.getPaging({ page, pageSize, count });
-        }
-
-        const formatNotes = JsonReParse(notes);
-
-        return res.ok({
-          message: 'success',
-          data: formatNotes.map((note) => ({
-            ..._.pick(note, ['id', 'title', 'content', 'type']),
-            startAt: note.startAt
-              ? dayjs(note.startAt).format('YYYY-MM-DD HH:mm:ss')
-              : null,
-            endAt: note.endAt
-              ? dayjs(note.endAt).format('YYYY-MM-DD HH:mm:ss')
-              : null,
-          })),
-          paging,
-        });
-      } else if (pageMode === 'calendar') {
-        if (!startAt || !endAt) {
-          throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-            error: 'startAt and endAt are required',
-          });
-        }
-
-        const notes = await dbModels.Note.findAll({
-          ...findAllParameter,
-        });
-
-        const formatNotes = JsonReParse(notes);
-
-        return res.ok({
-          message: 'success',
-          data: formatNotes.map((note) => ({
-            ..._.pick(note, ['id', 'title', 'content', 'type']),
-            startAt: note.startAt
-              ? dayjs(note.startAt).format('YYYY-MM-DD HH:mm:ss')
-              : null,
-            endAt: note.endAt
-              ? dayjs(note.endAt).format('YYYY-MM-DD HH:mm:ss')
-              : null,
-          })),
-        });
-      } else {
-        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'pageMode is not defined',
-        });
+      if (type !== null && typeof type !== 'undefined') {
+        where.type = type;
       }
+
+      if (CategoryId !== null && typeof CategoryId !== 'undefined') {
+        where.CategoryId = CategoryId;
+      }
+
+      const { count, rows: notes } = await dbModels.Note.findAndCountAll({
+        ...findAllParameter,
+      });
+
+      const formatNotes = JsonReParse(notes);
+
+      return res.ok({
+        message: 'success',
+        data: formatNotes.map((item) => ({
+          ..._.pick(item, ['id', 'title', 'content', 'type']),
+          startAt: item.startAt
+            ? dayjs(item.startAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+          endAt: item.endAt
+            ? dayjs(item.endAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+        })),
+        paging: {
+          totalCount: count,
+        },
+      });
     } catch (e) {
       return res.error(e);
     }
