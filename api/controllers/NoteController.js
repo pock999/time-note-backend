@@ -88,6 +88,18 @@ module.exports = {
       return res.error(e);
     }
   },
+
+  async GetType(req, res) {
+    try {
+      return res.ok({
+        message: 'success',
+        data: NoteType,
+      });
+    } catch (e) {
+      return res.error(e);
+    }
+  },
+
   async Create(req, res) {
     try {
       const { error, value } = Joi.object({

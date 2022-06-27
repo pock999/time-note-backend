@@ -137,6 +137,31 @@ describe('=== 新增note - POST /note/ ===', async () => {
   });
 });
 
+it('=== 取得note type - GET /note/type ===', async () => {
+  const userData = {
+    name: '王小明',
+    email: 'ming1234@google.com',
+    password: 'abcd1234',
+  };
+
+  await dbModels.User.create(userData);
+
+  const authorizationToken = await callLogin({
+    ..._.pick(userData, ['email', 'password']),
+  });
+
+  const res = await request(app)
+    .get('/note/type')
+    .set({
+      Authorization: `Bearer ${authorizationToken}`,
+    });
+
+  expect(res.statusCode).to.be.equal(200);
+  expect(res.body.message).to.be.equal('success');
+
+  await await dbModels.User.destroy({ where: {}, truncate: true });
+});
+
 describe('=== 列表note - GET /note/list ===', async () => {
   const now = dayjs();
 
