@@ -17,6 +17,8 @@ module.exports = {
           .integer()
           .valid(..._.map(NoteType, 'value')),
         CategoryId: Joi.number().integer(),
+        // 預設需要分組
+        isGroup: Joi.boolean().default(true),
       }).validate({
         ...req.body,
         ...req.query,
@@ -30,7 +32,7 @@ module.exports = {
         });
       }
 
-      const { startAt, endAt, type, CategoryId } = value;
+      const { startAt, endAt, type, CategoryId, isGroup } = value;
 
       const where = {};
       const order = [];
@@ -67,24 +69,76 @@ module.exports = {
         ...findAllParameter,
       });
 
-      const formatNotes = JsonReParse(notes);
+      const formatNotes = JsonReParse(notes).map((item) => ({
+        ..._.pick(item, ['id', 'title', 'content', 'type']),
+        startAt: item.startAt
+          ? dayjs(item.startAt).format('YYYY-MM-DD HH:mm:ss')
+          : null,
+        endAt: item.endAt
+          ? dayjs(item.endAt).format('YYYY-MM-DD HH:mm:ss')
+          : null,
+      }));
+
+      // 分組
+      let groupNotes;
+
+      // 需要分組再分組
+      if (isGroup) {
+        if (startAt) {
+          // 相差天數
+          const diffDay = endAt
+            ? dayjs(endAt).diff(startAt, 'day')
+            : dayjs().diff(startAt, 'day');
+
+          groupNotes = formatNotes.reduce((group, data) => {
+            let { startAt: dateTime } = data;
+            dateTime = dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss');
+
+            // 相差天數超過30天 => 1個月1組，其他1天1組
+            if (diffDay > 30) {
+              // slice(0, 7) => YYYY-MM
+              group[dateTime.slice(0, 7)] = group[dateTime.slice(0, 7)] ?? [];
+              group[dateTime.slice(0, 7)].push(data);
+            } else {
+              // slice(0, 10) => YYYY-MM-DD
+              group[dateTime.slice(0, 10)] = group[startAt.slice(0, 10)] ?? [];
+              group[dateTime.slice(0, 10)].push(data);
+            }
+            return group;
+          }, {});
+        } else {
+          // 1個月1組
+          groupNotes = formatNotes.reduce((group, data) => {
+            let { startAt: dateTime } = data;
+            dateTime = dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss');
+
+            // slice(0, 7) => YYYY-MM
+            group[dateTime.slice(0, 7)] = group[dateTime.slice(0, 7)] ?? [];
+            group[dateTime.slice(0, 7)].push(data);
+            return group;
+          }, {});
+        }
+
+        // 依照key 大至小 排序
+        groupNotes = Object.keys(groupNotes)
+          .sort((a, b) => (a < b ? 1 : -1))
+          .reduce((obj, key) => {
+            obj[key] = groupNotes[key];
+            return obj;
+          }, {});
+      } else {
+        groupNotes = formatNotes;
+      }
 
       return res.ok({
         message: 'success',
-        data: formatNotes.map((item) => ({
-          ..._.pick(item, ['id', 'title', 'content', 'type']),
-          startAt: item.startAt
-            ? dayjs(item.startAt).format('YYYY-MM-DD HH:mm:ss')
-            : null,
-          endAt: item.endAt
-            ? dayjs(item.endAt).format('YYYY-MM-DD HH:mm:ss')
-            : null,
-        })),
+        data: groupNotes,
         paging: {
           totalCount: count,
         },
       });
     } catch (e) {
+      console.log('error =>', e);
       return res.error(e);
     }
   },

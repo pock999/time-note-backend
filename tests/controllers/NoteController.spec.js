@@ -162,6 +162,7 @@ it('=== 取得note type - GET /note/type ===', async () => {
   await await dbModels.User.destroy({ where: {}, truncate: true });
 });
 
+// TODO: 待更新
 describe('=== 列表note - GET /note/list ===', async () => {
   const now = dayjs();
 
