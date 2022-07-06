@@ -18,7 +18,7 @@ module.exports = {
           .valid(..._.map(NoteType, 'value')),
         CategoryId: Joi.number().integer(),
         // 預設需要分組
-        isGroup: Joi.boolean().default(true),
+        isGroup: Joi.number().default(1),
       }).validate({
         ...req.body,
         ...req.query,
@@ -83,7 +83,7 @@ module.exports = {
       let groupNotes;
 
       // 需要分組再分組
-      if (isGroup) {
+      if (!!isGroup) {
         if (startAt) {
           // 相差天數
           const diffDay = endAt
@@ -132,7 +132,10 @@ module.exports = {
 
       return res.ok({
         message: 'success',
-        data: groupNotes,
+        data: {
+          notes: groupNotes,
+          isGroup,
+        },
         paging: {
           totalCount: count,
         },
