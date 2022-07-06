@@ -35,7 +35,10 @@ module.exports = {
       const { startAt, endAt, type, CategoryId, isGroup } = value;
 
       const where = {};
-      const order = [];
+      const order = [
+        ['startAt', 'DESC'],
+        ['id', 'DESC'],
+      ];
 
       const findAllParameter = {
         where,
@@ -97,12 +100,42 @@ module.exports = {
             // 相差天數超過30天 => 1個月1組，其他1天1組
             if (diffDay > 30) {
               // slice(0, 7) => YYYY-MM
-              group[dateTime.slice(0, 7)] = group[dateTime.slice(0, 7)] ?? [];
-              group[dateTime.slice(0, 7)].push(data);
+              const timeRange = dateTime.slice(0, 7);
+              const timeRangeDate = dayjs(timeRange);
+
+              group[timeRange] = group[timeRange] ?? {
+                startAt: timeRangeDate
+                  .month(timeRangeDate.month())
+                  .date(1)
+                  .hour(0)
+                  .minute(0)
+                  .second(0)
+                  .format('YYYY-MM-DD HH:mm:ss'),
+                endAt: timeRangeDate
+                  .month(timeRangeDate.month() + 1)
+                  .date(1)
+                  .hour(0)
+                  .minute(0)
+                  .second(0)
+                  .subtract(1, 'second')
+                  .format('YYYY-MM-DD HH:mm:ss'),
+                notes: [],
+                count: 0,
+              };
+              group[timeRange].notes.push(data);
+              group[timeRange].count += 1;
             } else {
               // slice(0, 10) => YYYY-MM-DD
-              group[dateTime.slice(0, 10)] = group[startAt.slice(0, 10)] ?? [];
-              group[dateTime.slice(0, 10)].push(data);
+              const timeRange = dateTime.slice(0, 10);
+
+              group[timeRange] = group[timeRange] ?? {
+                startAt: `${timeRange} 00:00:00`,
+                endAt: `${timeRange} 23:59:59`,
+                notes: [],
+                count: 0,
+              };
+              group[timeRange].notes.push(data);
+              group[timeRange].count += 1;
             }
             return group;
           }, {});
@@ -113,8 +146,30 @@ module.exports = {
             dateTime = dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss');
 
             // slice(0, 7) => YYYY-MM
-            group[dateTime.slice(0, 7)] = group[dateTime.slice(0, 7)] ?? [];
-            group[dateTime.slice(0, 7)].push(data);
+            const timeRange = dateTime.slice(0, 7);
+            const timeRangeDate = dayjs(timeRange);
+
+            group[timeRange] = group[timeRange] ?? {
+              startAt: timeRangeDate
+                .month(timeRangeDate.month())
+                .date(1)
+                .hour(0)
+                .minute(0)
+                .second(0)
+                .format('YYYY-MM-DD HH:mm:ss'),
+              endAt: timeRangeDate
+                .month(timeRangeDate.month() + 1)
+                .date(1)
+                .hour(0)
+                .minute(0)
+                .second(0)
+                .subtract(1, 'second')
+                .format('YYYY-MM-DD HH:mm:ss'),
+              notes: [],
+              count: 0,
+            };
+            group[timeRange].notes.push(data);
+            group[timeRange].count += 1;
             return group;
           }, {});
         }
@@ -135,6 +190,10 @@ module.exports = {
         data: {
           notes: groupNotes,
           isGroup,
+          startAt: startAt
+            ? dayjs(startAt).format('YYYY-MM-DD HH:mm:ss')
+            : null,
+          endAt: endAt ? dayjs(endAt).format('YYYY-MM-DD HH:mm:ss') : null,
         },
         paging: {
           totalCount: count,
