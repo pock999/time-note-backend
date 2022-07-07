@@ -181,8 +181,27 @@ module.exports = {
             obj[key] = groupNotes[key];
             return obj;
           }, {});
+
+        // 依照年份在分組
+        groupNotes = Object.keys(groupNotes).reduce((group, key) => {
+          const year = key.slice(0, 4);
+
+          group[year] = group[year] ?? {};
+          group[year][key] = groupNotes[key];
+
+          return group;
+        }, {});
       } else {
-        groupNotes = formatNotes;
+        // 依照年份在分組
+        groupNotes = formatNotes.reduce((group, data) => {
+          const { startAt: dateTime } = data;
+          const year = dateTime.slice(0, 4);
+
+          group[year] = group[year] ?? [];
+          group[year].push(data);
+
+          return group;
+        }, {});
       }
 
       return res.ok({
