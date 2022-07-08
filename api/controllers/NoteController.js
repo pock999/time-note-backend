@@ -231,6 +231,7 @@ module.exports = {
         data: NoteType,
       });
     } catch (e) {
+      console.log('error =>', e);
       return res.error(e);
     }
   },
@@ -302,11 +303,8 @@ module.exports = {
         },
       });
     } catch (e) {
-      return res.status(500).json({
-        message: 'error',
-        statusCode: 500,
-        data: e,
-      });
+      console.log('error =>', e);
+      return res.error(e);
     }
   },
   async Detail(req, res) {
@@ -353,6 +351,7 @@ module.exports = {
         },
       });
     } catch (e) {
+      console.log('error =>', e);
       return res.error(e);
     }
   },
@@ -439,6 +438,7 @@ module.exports = {
         },
       });
     } catch (e) {
+      console.log('error =>', e);
       return res.error(e);
     }
   },
@@ -483,6 +483,7 @@ module.exports = {
         data: null,
       });
     } catch (e) {
+      console.log('error =>', e);
       return res.error(e);
     }
   },
