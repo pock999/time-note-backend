@@ -262,6 +262,45 @@ module.exports = {
     }
   },
 
+  async GetCategory(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        id: Joi.number().integer().required(),
+      }).validate(req.params);
+
+      if (error) {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
+          error: error.message,
+        });
+      }
+
+      const { id } = value;
+
+      const { user } = req;
+
+      const category = await dbModels.Category.findOne({
+        where: {
+          UserId: user.id,
+          id,
+        },
+      });
+
+      const formatCategory = JsonReParse(category);
+
+      return res.ok({
+        message: 'success',
+        data: {
+          value: formatCategory.id,
+          name: formatCategory.name,
+          color: formatCategory.color,
+        },
+      });
+    } catch (e) {
+      console.log('error =>', e);
+      return res.error(e);
+    }
+  },
+
   async Create(req, res) {
     try {
       const { error, value } = Joi.object({
