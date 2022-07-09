@@ -12,12 +12,15 @@ module.exports = async () => {
   const CategoriesName = [
     {
       name: '重要',
+      color: '#F83637',
     },
     {
       name: '待辦',
+      color: '#AADFC9',
     },
     {
       name: '閱讀清單',
+      color: '#84C9E2',
     },
   ];
 

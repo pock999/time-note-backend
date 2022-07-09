@@ -224,11 +224,37 @@ module.exports = {
     }
   },
 
-  async GetType(req, res) {
+  async GetTypes(req, res) {
     try {
       return res.ok({
         message: 'success',
         data: NoteType,
+      });
+    } catch (e) {
+      console.log('error =>', e);
+      return res.error(e);
+    }
+  },
+
+  async GetCategories(req, res) {
+    try {
+      const { user } = req;
+
+      const categories = await dbModels.Category.findAll({
+        where: {
+          UserId: user.id,
+        },
+      });
+
+      const formatCategories = JsonReParse(categories);
+
+      return res.ok({
+        message: 'success',
+        data: formatCategories.map((item) => ({
+          value: item.id,
+          name: item.name,
+          color: item.color,
+        })),
       });
     } catch (e) {
       console.log('error =>', e);

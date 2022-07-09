@@ -8,6 +8,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(100),
         allowNull: false,
       },
+      // 標籤顏色
+      color: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+        defaultValue: '#707070',
+      },
     },
     {
       // options

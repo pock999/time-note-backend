@@ -137,7 +137,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
   });
 });
 
-it('=== 取得note type - GET /note/type ===', async () => {
+it('=== 取得note type - GET /note/types ===', async () => {
   const userData = {
     name: '王小明',
     email: 'ming1234@google.com',
@@ -151,7 +151,7 @@ it('=== 取得note type - GET /note/type ===', async () => {
   });
 
   const res = await request(app)
-    .get('/note/type')
+    .get('/note/types')
     .set({
       Authorization: `Bearer ${authorizationToken}`,
     });
