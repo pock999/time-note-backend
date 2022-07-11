@@ -69,4 +69,53 @@ module.exports = {
       return res.error(e);
     }
   },
+  async Create(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        name: Joi.string().required(),
+        color: Joi.string().default('#707070'),
+      }).validate(req.body);
+
+      if (error) {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
+          error: error.message,
+        });
+      }
+
+      const { name, color } = value;
+
+      const { user } = req;
+
+      const isExist = await dbModels.Category.count({
+        where: {
+          UserId: user.id,
+          name,
+        },
+      });
+
+      if (isExist) {
+        throw ReturnMsg.BAD_REQUEST.DATA_DUPLICATED({
+          error: error.message,
+        });
+      }
+
+      const category = await dbModels.Category.create({
+        UserId: user.id,
+        name,
+        color,
+      });
+
+      const formatCategory = JsonReParse(category);
+
+      return res.ok({
+        message: 'success',
+        data: {
+          ..._.pick(formatCategory, ['id', 'name', 'color']),
+        },
+      });
+    } catch (e) {
+      console.log('error =>', e);
+      return res.error(e);
+    }
+  },
 };

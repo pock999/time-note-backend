@@ -58,6 +58,11 @@ module.exports = {
       code: 400,
       payload: obj,
     }),
+    DATA_DUPLICATED: (obj) => ({
+      message: 'BadRequest.Data.Duplicated',
+      code: 400,
+      payload: obj,
+    }),
   },
   ERROR: {},
 };

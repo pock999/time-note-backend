@@ -6,6 +6,7 @@ const CategoryController = require('../controllers/CategoryController');
 const jwtDecode = require('../middlewares/jwtDecode');
 const isUser = require('../middlewares/isUser');
 
+router.post('/', jwtDecode, isUser, CategoryController.Create);
 router.get('/list', jwtDecode, isUser, CategoryController.List);
 router.get('/:id', jwtDecode, isUser, CategoryController.Detail);
 
