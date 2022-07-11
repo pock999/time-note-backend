@@ -21,9 +21,7 @@ module.exports = {
       return res.ok({
         message: 'success',
         data: formatCategories.map((item) => ({
-          value: item.id,
-          name: item.name,
-          color: item.color,
+          ..._.pick(item, ['id', 'name', 'color']),
         })),
       });
     } catch (e) {
@@ -54,14 +52,18 @@ module.exports = {
         },
       });
 
+      if (!category) {
+        throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
+          id,
+        });
+      }
+
       const formatCategory = JsonReParse(category);
 
       return res.ok({
         message: 'success',
         data: {
-          value: formatCategory.id,
-          name: formatCategory.name,
-          color: formatCategory.color,
+          ..._.pick(formatCategory, ['id', 'name', 'color']),
         },
       });
     } catch (e) {
@@ -104,6 +106,73 @@ module.exports = {
         name,
         color,
       });
+
+      const formatCategory = JsonReParse(category);
+
+      return res.ok({
+        message: 'success',
+        data: {
+          ..._.pick(formatCategory, ['id', 'name', 'color']),
+        },
+      });
+    } catch (e) {
+      console.log('error =>', e);
+      return res.error(e);
+    }
+  },
+  async Update(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        id: Joi.number().integer().required(),
+        name: Joi.string().required(),
+        color: Joi.string().default('#9DA6A4'),
+      }).validate({
+        ...req.body,
+        ...req.params,
+      });
+
+      if (error) {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
+          error: error.message,
+        });
+      }
+
+      const { id, name, color } = value;
+
+      const { user } = req;
+
+      const category = await dbModels.Category.findOne({
+        where: {
+          UserId: user.id,
+          id,
+        },
+      });
+
+      if (!category) {
+        throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
+          id,
+        });
+      }
+
+      const isExist = await dbModels.Category.count({
+        where: {
+          UserId: user.id,
+          name,
+          id: {
+            [Op.not]: id,
+          },
+        },
+      });
+
+      if (isExist) {
+        throw ReturnMsg.BAD_REQUEST.DATA_DUPLICATED({
+          name,
+        });
+      }
+
+      category.name = name;
+      category.color = color;
+      await category.save();
 
       const formatCategory = JsonReParse(category);
 
