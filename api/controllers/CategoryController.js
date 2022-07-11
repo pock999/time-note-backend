@@ -95,7 +95,7 @@ module.exports = {
 
       if (isExist) {
         throw ReturnMsg.BAD_REQUEST.DATA_DUPLICATED({
-          error: error.message,
+          name,
         });
       }
 
