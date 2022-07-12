@@ -187,4 +187,71 @@ module.exports = {
       return res.error(e);
     }
   },
+  async Delete(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        id: Joi.number().integer().required(),
+      }).validate(req.params);
+
+      if (error) {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
+          error: error.message,
+        });
+      }
+
+      const { id } = value;
+
+      const { user } = req;
+
+      const category = await dbModels.Category.findOne({
+        where: {
+          UserId: user.id,
+          id,
+        },
+      });
+
+      if (!category) {
+        throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
+          id,
+        });
+      }
+
+      const tx = await dbModels.sequelize.transaction();
+
+      try {
+        await dbModels.Note.update(
+          {
+            CategoryId: null,
+          },
+          {
+            where: {
+              UserId: user.id,
+              CategoryId: id,
+            },
+            transaction: tx,
+          }
+        );
+
+        await dbModels.Category.destroy({
+          where: {
+            UserId: user.id,
+            id,
+          },
+          transaction: tx,
+        });
+        await tx.commit();
+      } catch (err) {
+        console.error('transaction err => ', err);
+        await tx.rollback();
+      }
+
+      return res.ok({
+        message: 'success',
+        data: null,
+      });
+    } catch (e) {
+      console.log('error =>', e);
+      return res.error(e);
+    }
+  },
 };

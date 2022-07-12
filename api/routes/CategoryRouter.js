@@ -10,5 +10,6 @@ router.post('/', jwtDecode, isUser, CategoryController.Create);
 router.get('/list', jwtDecode, isUser, CategoryController.List);
 router.get('/:id', jwtDecode, isUser, CategoryController.Detail);
 router.put('/:id', jwtDecode, isUser, CategoryController.Update);
+router.delete('/:id', jwtDecode, isUser, CategoryController.Delete);
 
 module.exports = router;
