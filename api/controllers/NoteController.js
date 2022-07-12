@@ -73,7 +73,7 @@ module.exports = {
       });
 
       const formatNotes = JsonReParse(notes).map((item) => ({
-        ..._.pick(item, ['id', 'title', 'content', 'type']),
+        ..._.pick(item, ['id', 'title', 'content', 'type', 'Category']),
         startAt: item.startAt
           ? dayjs(item.startAt).format('YYYY-MM-DD HH:mm:ss')
           : null,
