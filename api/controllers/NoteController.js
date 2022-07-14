@@ -241,6 +241,12 @@ module.exports = {
       const { error, value } = Joi.object({
         title: Joi.string().required(),
         type: Joi.number().integer().required(),
+        CategoryId: Joi.number()
+          .integer()
+          .required()
+          .allow(null)
+          .allow('')
+          .default(null),
         content: Joi.string().required(),
         startAt: Joi.date(),
         endAt: Joi.date(),
@@ -256,7 +262,7 @@ module.exports = {
 
       const { user } = req;
 
-      const { type, startAt, endAt } = value;
+      const { type, startAt, endAt, CategoryId } = value;
       // 行程(提醒), startAt和endAt為必填欄位
       if (type === 2 && (!startAt || !endAt)) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
@@ -285,6 +291,7 @@ module.exports = {
         ..._.omit(value, ['startAt', 'endAt']),
         ...(!startAt ? { startAt: nowTime } : { startAt }),
         ...(!endAt ? { endAt: nowTime } : { endAt }),
+        CategoryId: CategoryId === 0 ? null : CategoryId,
         UserId: user.id,
       });
 
@@ -293,7 +300,13 @@ module.exports = {
       return res.ok({
         message: 'success',
         data: {
-          ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
+          ..._.pick(formatNote, [
+            'id',
+            'title',
+            'content',
+            'type',
+            'CategoryId',
+          ]),
           startAt: formatNote.startAt
             ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
             : null,
@@ -341,7 +354,13 @@ module.exports = {
       return res.ok({
         message: 'success',
         data: {
-          ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
+          ..._.pick(formatNote, [
+            'id',
+            'title',
+            'content',
+            'type',
+            'CategoryId',
+          ]),
           startAt: formatNote.startAt
             ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
             : null,
@@ -362,6 +381,12 @@ module.exports = {
 
         title: Joi.string().required(),
         type: Joi.number().integer().required(),
+        CategoryId: Joi.number()
+          .integer()
+          .required()
+          .allow(null)
+          .allow('')
+          .default(null),
         content: Joi.string().required(),
         startAt: Joi.date(),
         endAt: Joi.date(),
@@ -378,7 +403,7 @@ module.exports = {
 
       const { user } = req;
 
-      const { id, title, type, content, startAt, endAt } = value;
+      const { id, title, type, content, startAt, endAt, CategoryId } = value;
 
       const note = await dbModels.Note.findOne({
         where: {
@@ -421,6 +446,7 @@ module.exports = {
       note.content = content;
       note.startAt = startAt;
       note.endAt = endAt;
+      note.CategoryId = CategoryId === 0 ? null : CategoryId;
       await note.save();
 
       const formatNote = JsonReParse(note);
@@ -428,7 +454,13 @@ module.exports = {
       return res.ok({
         message: 'success',
         data: {
-          ..._.pick(formatNote, ['id', 'title', 'content', 'type']),
+          ..._.pick(formatNote, [
+            'id',
+            'title',
+            'content',
+            'type',
+            'CategoryId',
+          ]),
           startAt: formatNote.startAt
             ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
             : null,
