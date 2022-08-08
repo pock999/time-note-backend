@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       color: {
         type: DataTypes.STRING(100),
         allowNull: false,
-        defaultValue: '#9DA6A4',
+        defaultValue: '#969696',
       },
     },
     {
