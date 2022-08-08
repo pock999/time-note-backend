@@ -18,7 +18,7 @@ module.exports = {
           .valid(..._.map(NoteType, 'value')),
         CategoryId: Joi.number().integer(),
         // 預設需要分組
-        isGroup: Joi.number().default(1),
+        page: Joi.number().default(1),
       }).validate({
         ...req.body,
         ...req.query,
@@ -32,7 +32,7 @@ module.exports = {
         });
       }
 
-      const { startAt, endAt, type, CategoryId, isGroup } = value;
+      const { startAt, endAt, type, CategoryId, page } = value;
 
       const where = {};
       const order = [
@@ -40,10 +40,13 @@ module.exports = {
         ['id', 'DESC'],
       ];
 
+      const paginater = await PageHelper.paginater({ page, pageSize: 20 });
+
       const findAllParameter = {
         where,
         order,
         include: [{ model: dbModels.Category }],
+        ...paginater,
       };
 
       where.UserId = user.id;
@@ -82,140 +85,13 @@ module.exports = {
           : null,
       }));
 
-      // 分組
-      let groupNotes;
-
-      // 需要分組再分組
-      if (!!isGroup) {
-        if (startAt) {
-          // 相差天數
-          const diffDay = endAt
-            ? dayjs(endAt).diff(startAt, 'day')
-            : dayjs().diff(startAt, 'day');
-
-          groupNotes = formatNotes.reduce((group, data) => {
-            let { startAt: dateTime } = data;
-            dateTime = dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss');
-
-            // 相差天數超過30天 => 1個月1組，其他1天1組
-            if (diffDay > 30) {
-              // slice(0, 7) => YYYY-MM
-              const timeRange = dateTime.slice(0, 7);
-              const timeRangeDate = dayjs(timeRange);
-
-              group[timeRange] = group[timeRange] ?? {
-                startAt: timeRangeDate
-                  .month(timeRangeDate.month())
-                  .date(1)
-                  .hour(0)
-                  .minute(0)
-                  .second(0)
-                  .format('YYYY-MM-DD HH:mm:ss'),
-                endAt: timeRangeDate
-                  .month(timeRangeDate.month() + 1)
-                  .date(1)
-                  .hour(0)
-                  .minute(0)
-                  .second(0)
-                  .subtract(1, 'second')
-                  .format('YYYY-MM-DD HH:mm:ss'),
-                notes: [],
-                count: 0,
-              };
-              group[timeRange].notes.push(data);
-              group[timeRange].count += 1;
-            } else {
-              // slice(0, 10) => YYYY-MM-DD
-              const timeRange = dateTime.slice(0, 10);
-
-              group[timeRange] = group[timeRange] ?? {
-                startAt: `${timeRange} 00:00:00`,
-                endAt: `${timeRange} 23:59:59`,
-                notes: [],
-                count: 0,
-              };
-              group[timeRange].notes.push(data);
-              group[timeRange].count += 1;
-            }
-            return group;
-          }, {});
-        } else {
-          // 1個月1組
-          groupNotes = formatNotes.reduce((group, data) => {
-            let { startAt: dateTime } = data;
-            dateTime = dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss');
-
-            // slice(0, 7) => YYYY-MM
-            const timeRange = dateTime.slice(0, 7);
-            const timeRangeDate = dayjs(timeRange);
-
-            group[timeRange] = group[timeRange] ?? {
-              startAt: timeRangeDate
-                .month(timeRangeDate.month())
-                .date(1)
-                .hour(0)
-                .minute(0)
-                .second(0)
-                .format('YYYY-MM-DD HH:mm:ss'),
-              endAt: timeRangeDate
-                .month(timeRangeDate.month() + 1)
-                .date(1)
-                .hour(0)
-                .minute(0)
-                .second(0)
-                .subtract(1, 'second')
-                .format('YYYY-MM-DD HH:mm:ss'),
-              notes: [],
-              count: 0,
-            };
-            group[timeRange].notes.push(data);
-            group[timeRange].count += 1;
-            return group;
-          }, {});
-        }
-
-        // 依照key 大至小 排序
-        groupNotes = Object.keys(groupNotes)
-          .sort((a, b) => (a < b ? 1 : -1))
-          .reduce((obj, key) => {
-            obj[key] = groupNotes[key];
-            return obj;
-          }, {});
-
-        // 依照年份在分組
-        groupNotes = Object.keys(groupNotes).reduce((group, key) => {
-          const year = key.slice(0, 4);
-
-          group[year] = group[year] ?? {};
-          group[year][key] = groupNotes[key];
-
-          return group;
-        }, {});
-      } else {
-        // 依照年份在分組
-        groupNotes = formatNotes.reduce((group, data) => {
-          const { startAt: dateTime } = data;
-          const year = dateTime.slice(0, 4);
-
-          group[year] = group[year] ?? [];
-          group[year].push(data);
-
-          return group;
-        }, {});
-      }
-
       return res.ok({
         message: 'success',
-        data: {
-          notes: groupNotes,
-          isGroup,
-          startAt: startAt
-            ? dayjs(startAt).format('YYYY-MM-DD HH:mm:ss')
-            : null,
-          endAt: endAt ? dayjs(endAt).format('YYYY-MM-DD HH:mm:ss') : null,
-        },
+        data: formatNotes,
         paging: {
           totalCount: count,
+          page,
+          pageSize: 20,
         },
       });
     } catch (e) {

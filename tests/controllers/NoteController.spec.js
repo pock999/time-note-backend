@@ -211,7 +211,8 @@ describe('=== 列表note - GET /note/list ===', async () => {
         });
 
       expect(res.statusCode).to.be.equal(200);
-      expect(res.body.data.length).to.be.equal(25);
+      // default pageSize
+      expect(res.body.data.length).to.be.equal(20);
       expect(res.body.message).to.be.equal('success');
     });
 
@@ -257,7 +258,9 @@ describe('=== 列表note - GET /note/list ===', async () => {
         expect(res.statusCode).to.be.equal(200);
 
         // api 符合條件長度跟原始資料之符合條件長度比較
-        expect(res.body.data.length).to.be.equal(innerCount);
+        expect(res.body.data.length).to.be.equal(
+          innerCount > 20 ? 20 : innerCount
+        );
         expect(res.body.message).to.be.equal('success');
       });
       it('- 獲取當日', async () => {
@@ -301,7 +304,9 @@ describe('=== 列表note - GET /note/list ===', async () => {
         expect(res.statusCode).to.be.equal(200);
 
         // api 符合條件長度跟原始資料之符合條件長度比較
-        expect(res.body.data.length).to.be.equal(innerCount);
+        expect(res.body.data.length).to.be.equal(
+          innerCount > 20 ? 20 : innerCount
+        );
         expect(res.body.message).to.be.equal('success');
       });
     });
