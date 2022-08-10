@@ -35,10 +35,7 @@ module.exports = {
       const { startAt, endAt, type, CategoryId, page } = value;
 
       const where = {};
-      const order = [
-        ['startAt', 'DESC'],
-        ['id', 'DESC'],
-      ];
+      const order = [['startAt', 'DESC']];
 
       const paginater = await PageHelper.paginater({ page, pageSize: 20 });
 
