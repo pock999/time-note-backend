@@ -120,7 +120,7 @@ module.exports = {
           .allow('')
           .default(null),
         content: Joi.string().required(),
-        timePoint: Joi.date(),
+        timePoint: Joi.date().allow(null),
       }).validate(req.body);
 
       const nowTime = dayjs();
@@ -243,7 +243,7 @@ module.exports = {
           .allow('')
           .default(null),
         content: Joi.string().required(),
-        timePoint: Joi.date(),
+        timePoint: Joi.date().allow(null),
       }).validate({
         ...req.params,
         ...req.body,
