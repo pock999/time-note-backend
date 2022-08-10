@@ -11,7 +11,7 @@ const callLogin = async ({ email, password }) => {
     password,
   });
 
-  return res.body.data.token;
+  return _.get(res, 'body.data.token');
 };
 
 describe('=== 新增note - POST /note/ ===', async () => {
@@ -34,10 +34,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
   });
 
   describe('# 新增成功', async () => {
-    const startAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
-    const endAt = dayjs()
-      .add(dayjs.duration({ hour: 1 }))
-      .format('YYYY-MM-DD HH:mm:ss');
+    const timePoint = dayjs().format('YYYY-MM-DD HH:mm:ss');
 
     const authorizationToken = await callLogin({
       ..._.pick(userData, ['email', 'password']),
@@ -53,8 +50,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
           title: '新標題',
           type: 1,
           content: '新內容',
-          startAt,
-          endAt,
+          timePoint,
         });
 
       expect(res.statusCode).to.be.equal(200);
@@ -63,8 +59,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
       expect(res.body.data.title).to.be.equal('新標題');
       expect(res.body.data.type).to.be.equal(1);
       expect(res.body.data.content).to.be.equal('新內容');
-      expect(res.body.data.startAt).to.be.equal(startAt);
-      expect(res.body.data.endAt).to.be.equal(endAt);
+      expect(res.body.data.timePoint).to.be.equal(timePoint);
     });
 
     it('- type: 2(行程(提醒))', async () => {
@@ -77,8 +72,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
           title: '提醒',
           type: 2,
           content: '約會',
-          startAt,
-          endAt,
+          timePoint,
         });
 
       expect(res.statusCode).to.be.equal(200);
@@ -87,8 +81,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
       expect(res.body.data.title).to.be.equal('提醒');
       expect(res.body.data.type).to.be.equal(2);
       expect(res.body.data.content).to.be.equal('約會');
-      expect(res.body.data.startAt).to.be.equal(startAt);
-      expect(res.body.data.endAt).to.be.equal(endAt);
+      expect(res.body.data.timePoint).to.be.equal(timePoint);
     });
 
     it('- type: 3(文章)', async () => {
@@ -101,8 +94,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
           title: '新文章標題',
           type: 3,
           content: '今天天氣真好',
-          startAt,
-          endAt,
+          timePoint,
         });
 
       expect(res.statusCode).to.be.equal(200);
@@ -111,8 +103,7 @@ describe('=== 新增note - POST /note/ ===', async () => {
       expect(res.body.data.title).to.be.equal('新文章標題');
       expect(res.body.data.type).to.be.equal(3);
       expect(res.body.data.content).to.be.equal('今天天氣真好');
-      expect(res.body.data.startAt).to.be.equal(startAt);
-      expect(res.body.data.endAt).to.be.equal(endAt);
+      expect(res.body.data.timePoint).to.be.equal(timePoint);
     });
   });
 
@@ -120,20 +111,6 @@ describe('=== 新增note - POST /note/ ===', async () => {
     it('- 缺漏title', async () => {});
     it('- 缺漏type', async () => {});
     it('- 缺漏content', async () => {});
-
-    describe('- type: 1(筆記)', async () => {
-      it('- endAt比startAt小', async () => {});
-    });
-
-    describe('- type: 2(行程(提醒))', async () => {
-      it('- endAt比startAt小', async () => {});
-      it('- endAt比startAt大，但是比現在小', async () => {});
-      it('- endAt比現在大，startAt比現在小', async () => {});
-    });
-
-    describe('- type: 3(文章)', async () => {
-      it('- endAt比startAt小', async () => {});
-    });
   });
 });
 
@@ -176,8 +153,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
     title: `標題${i}`,
     type: (i % 3) + 1,
     content: i % 6 === 0 ? '' : `${i},,, ${i},,, ${i}`,
-    startAt: now.subtract(7 + (30 - i), 'hour'),
-    endAt: now.subtract(3 + (30 - i), 'hour'),
+    timePoint: now.subtract(7 + (30 - i), 'hour'),
     UserId: 1,
   }));
 
@@ -218,6 +194,10 @@ describe('=== 列表note - GET /note/list ===', async () => {
 
     describe('- 有條件', async () => {
       it('- 獲取當個月', async () => {
+        const authorizationToken = await callLogin({
+          ..._.pick(userData, ['email', 'password']),
+        });
+
         const monthStart = now
           .month(now.month())
           .date(1)
@@ -236,14 +216,10 @@ describe('=== 列表note - GET /note/list ===', async () => {
         // 算原始資料有幾個
         let innerCount = 0;
         for (const note of notesData) {
-          if (note.startAt > monthStart && note.endAt < monthLast) {
+          if (note.timePoint > monthStart && note.timePoint < monthLast) {
             innerCount += 1;
           }
         }
-
-        const authorizationToken = await callLogin({
-          ..._.pick(userData, ['email', 'password']),
-        });
 
         const res = await request(app)
           .get(
@@ -259,7 +235,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
 
         // api 符合條件長度跟原始資料之符合條件長度比較
         expect(res.body.data.length).to.be.equal(
-          innerCount > 20 ? 20 : innerCount
+          innerCount >= 20 ? 20 : innerCount
         );
         expect(res.body.message).to.be.equal('success');
       });
@@ -282,7 +258,10 @@ describe('=== 列表note - GET /note/list ===', async () => {
         // 算原始資料有幾個
         let innerCount = 0;
         for (const note of notesData) {
-          if (note.startAt > dateStart && note.endAt < dateLast) {
+          if (
+            dayjs(note.timePoint) >= dayjs(dateStart) &&
+            dayjs(note.timePoint) <= dayjs(dateLast)
+          ) {
             innerCount += 1;
           }
         }
@@ -305,7 +284,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
 
         // api 符合條件長度跟原始資料之符合條件長度比較
         expect(res.body.data.length).to.be.equal(
-          innerCount > 20 ? 20 : innerCount
+          innerCount >= 20 ? 20 : innerCount
         );
         expect(res.body.message).to.be.equal('success');
       });

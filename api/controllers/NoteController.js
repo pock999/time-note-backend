@@ -35,7 +35,7 @@ module.exports = {
       const { startAt, endAt, type, CategoryId, page } = value;
 
       const where = {};
-      const order = [['startAt', 'DESC']];
+      const order = [['timePoint', 'DESC']];
 
       const paginater = await PageHelper.paginater({ page, pageSize: 20 });
 
@@ -48,14 +48,16 @@ module.exports = {
 
       where.UserId = user.id;
 
-      if (startAt) {
-        where.startAt = {
+      if (startAt && endAt) {
+        where.timePoint = {
+          [Op.between]: [startAt, endAt],
+        };
+      } else if (startAt) {
+        where.timePoint = {
           [Op.gte]: startAt,
         };
-      }
-
-      if (endAt) {
-        where.endAt = {
+      } else if (endAt) {
+        where.timePoint = {
           [Op.lte]: endAt,
         };
       }
@@ -74,11 +76,8 @@ module.exports = {
 
       const formatNotes = JsonReParse(notes).map((item) => ({
         ..._.pick(item, ['id', 'title', 'content', 'type', 'Category']),
-        startAt: item.startAt
-          ? dayjs(item.startAt).format('YYYY-MM-DD HH:mm:ss')
-          : null,
-        endAt: item.endAt
-          ? dayjs(item.endAt).format('YYYY-MM-DD HH:mm:ss')
+        timePoint: item.timePoint
+          ? dayjs(item.timePoint).format('YYYY-MM-DD HH:mm:ss')
           : null,
       }));
 
@@ -121,8 +120,7 @@ module.exports = {
           .allow('')
           .default(null),
         content: Joi.string().required(),
-        startAt: Joi.date(),
-        endAt: Joi.date(),
+        timePoint: Joi.date(),
       }).validate(req.body);
 
       const nowTime = dayjs();
@@ -135,35 +133,25 @@ module.exports = {
 
       const { user } = req;
 
-      const { type, startAt, endAt, CategoryId } = value;
-      // 行程(提醒), startAt和endAt為必填欄位
-      if (type === 2 && (!startAt || !endAt)) {
+      const { type, timePoint, CategoryId } = value;
+      // 行程(提醒), timePoint為必填欄位
+      if (type === 2 && !timePoint) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'startAt and endAt are required',
+          error: 'timePoint are required',
         });
       }
 
-      // 行程(提醒), startAt以及endAt不可以比now還以前
-      if (type === 2 && (dayjs() > dayjs(startAt) || dayjs() > dayjs(endAt))) {
+      // 行程(提醒), timePoint不可以比now還以前
+      if (type === 2 && dayjs() > dayjs(timePoint)) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'startAt and endAt are need later than now',
+          error: 'timePoint are need later than now',
         });
-      }
-
-      // 若startAt, endAt都有填寫，則確保大小為endAt >= startAt
-      if (!!startAt && !!endAt) {
-        if (dayjs(startAt) > dayjs(endAt)) {
-          throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-            error: 'endAt is need later than now',
-          });
-        }
       }
 
       const note = await dbModels.Note.create({
-        // 若沒有startAt, endAt 把 now 補進去
-        ..._.omit(value, ['startAt', 'endAt']),
-        ...(!startAt ? { startAt: nowTime } : { startAt }),
-        ...(!endAt ? { endAt: nowTime } : { endAt }),
+        // 若沒有timePoint, now 補進去
+        ..._.omit(value, ['timePoint']),
+        ...(!timePoint ? { timePoint: nowTime } : { timePoint }),
         CategoryId: CategoryId === 0 ? null : CategoryId,
         UserId: user.id,
       });
@@ -180,11 +168,8 @@ module.exports = {
             'type',
             'CategoryId',
           ]),
-          startAt: formatNote.startAt
-            ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
-            : null,
-          endAt: formatNote.endAt
-            ? dayjs(formatNote.endAt).format('YYYY-MM-DD HH:mm:ss')
+          timePoint: formatNote.timePoint
+            ? dayjs(formatNote.timePoint).format('YYYY-MM-DD HH:mm:ss')
             : null,
         },
       });
@@ -234,11 +219,8 @@ module.exports = {
             'type',
             'CategoryId',
           ]),
-          startAt: formatNote.startAt
-            ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
-            : null,
-          endAt: formatNote.endAt
-            ? dayjs(formatNote.endAt).format('YYYY-MM-DD HH:mm:ss')
+          timePoint: formatNote.timePoint
+            ? dayjs(formatNote.timePoint).format('YYYY-MM-DD HH:mm:ss')
             : null,
         },
       });
@@ -261,8 +243,7 @@ module.exports = {
           .allow('')
           .default(null),
         content: Joi.string().required(),
-        startAt: Joi.date(),
-        endAt: Joi.date(),
+        timePoint: Joi.date(),
       }).validate({
         ...req.params,
         ...req.body,
@@ -276,7 +257,7 @@ module.exports = {
 
       const { user } = req;
 
-      const { id, title, type, content, startAt, endAt, CategoryId } = value;
+      const { id, title, type, content, timePoint, CategoryId } = value;
 
       const note = await dbModels.Note.findOne({
         where: {
@@ -291,34 +272,24 @@ module.exports = {
         });
       }
 
-      // 行程(提醒), startAt和endAt為必填欄位
-      if (type === 2 && (!startAt || !endAt)) {
+      // 行程(提醒), timePoint為必填欄位
+      if (type === 2 && !timePoint) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'startAt and endAt are required',
+          error: 'timePoint are required',
         });
       }
 
-      // 行程(提醒), startAt以及endAt不可以比now還以前
-      if (type === 2 && (dayjs() > dayjs(startAt) || dayjs() > dayjs(endAt))) {
+      // 行程(提醒), timePoint不可以比now還以前
+      if (type === 2 && dayjs() > dayjs(timePoint)) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'startAt and endAt are need later than now',
+          error: 'timePoint are need later than now',
         });
-      }
-
-      // 若startAt, endAt都有填寫，則確保大小為endAt >= startAt
-      if (!!startAt && !!endAt) {
-        if (dayjs(startAt) > dayjs(endAt)) {
-          throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-            error: 'endAt is need later than now',
-          });
-        }
       }
 
       note.title = title;
       note.type = type;
       note.content = content;
-      note.startAt = startAt;
-      note.endAt = endAt;
+      note.timePoint = timePoint;
       note.CategoryId = CategoryId === 0 ? null : CategoryId;
       await note.save();
 
@@ -334,11 +305,8 @@ module.exports = {
             'type',
             'CategoryId',
           ]),
-          startAt: formatNote.startAt
-            ? dayjs(formatNote.startAt).format('YYYY-MM-DD HH:mm:ss')
-            : null,
-          endAt: formatNote.endAt
-            ? dayjs(formatNote.endAt).format('YYYY-MM-DD HH:mm:ss')
+          timePoint: formatNote.timePoint
+            ? dayjs(formatNote.timePoint).format('YYYY-MM-DD HH:mm:ss')
             : null,
         },
       });
