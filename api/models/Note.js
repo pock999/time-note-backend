@@ -22,14 +22,8 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
 
-      // 通常用在行程(提醒)
-      // 起始時間
-      startAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
-      // 結束時間
-      endAt: {
+      // 通常用在行程(提醒時間)，紀錄的時間
+      timePoint: {
         type: DataTypes.DATE,
         allowNull: true,
       },

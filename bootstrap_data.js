@@ -44,8 +44,7 @@ module.exports = async () => {
       title: `標題${i}`,
       type: (i % 3) + 1,
       content: `內容!!!!!!,${i},${i},${i},${i},${i},${i},${i}`,
-      startAt: now.subtract(7 + (30 - i), 'hour'),
-      endAt: now.subtract(3 + (30 - i), 'hour'),
+      timePoint: now.subtract(7 + (30 - i), 'hour'),
       UserId: user1.id,
       CategoryId: categoryIds[i % 3],
     });
