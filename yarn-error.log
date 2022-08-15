@@ -1,5 +1,5 @@
 Arguments: 
-  /Users/rickh444/.nvm/versions/node/v14.17.0/bin/node /Users/rickh444/.nvm/versions/node/v14.17.0/bin/yarn add nodemailer
+  /Users/rickh444/.nvm/versions/node/v14.17.0/bin/node /Users/rickh444/.nvm/versions/node/v14.17.0/bin/yarn add √
 
 PATH: 
   /Users/rickh444/google-cloud-sdk/bin:/Users/rickh444/.gvm/pkgsets/go1.14.5/global/bin:/Users/rickh444/.gvm/gos/go1.14.5/bin:/Users/rickh444/.gvm/pkgsets/go1.14.5/global/overlay/bin:/Users/rickh444/.gvm/bin:/Users/rickh444/.gvm/bin:/Users/rickh444/.nvm/versions/node/v14.17.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Users/rickh444/google-cloud-sdk/bin:/Users/rickh444/opt/miniconda3/condabin:/Users/rickh444/.gvm/pkgsets/go1.14.5/global/bin:/Users/rickh444/.gvm/gos/go1.14.5/bin:/Users/rickh444/.gvm/pkgsets/go1.14.5/global/overlay/bin:/Users/rickh444/.gvm/bin:/Users/rickh444/.nvm/versions/node/v14.17.0/bin:/Users/rickh444/Library/Android/sdk/tools:/Users/rickh444/Library/Android/sdk/platform-tools:/Users/rickh444/Library/Android/sdk/tools:/Users/rickh444/Library/Android/sdk/platform-tools
@@ -14,7 +14,14 @@ Platform:
   darwin x64
 
 Trace: 
-  Error: ENOENT: no such file or directory, scandir '/Users/rickh444/Desktop/github_pock999/time-note-backend/node_modules/mocha/node_modules/debug/node_modules'
+  TypeError [ERR_UNESCAPED_CHARACTERS]: Request path contains unescaped characters
+      at new ClientRequest (_http_client.js:155:13)
+      at Object.request (https.js:326:10)
+      at Request.module.exports.Request.start (/Users/rickh444/.nvm/versions/node/v14.17.0/lib/node_modules/yarn/lib/cli.js:141445:32)
+      at Request.module.exports.Request.end (/Users/rickh444/.nvm/versions/node/v14.17.0/lib/node_modules/yarn/lib/cli.js:142204:10)
+      at end (/Users/rickh444/.nvm/versions/node/v14.17.0/lib/node_modules/yarn/lib/cli.js:141258:14)
+      at Immediate._onImmediate (/Users/rickh444/.nvm/versions/node/v14.17.0/lib/node_modules/yarn/lib/cli.js:141272:7)
+      at processImmediate (internal/timers.js:462:21)
 
 npm manifest: 
   {
@@ -27,6 +34,7 @@ npm manifest:
       "test-cover": "NODE_ENV=test ./node_modules/.bin/nyc mocha tests --recursive --timeout 5000 --exit"
     },
     "dependencies": {
+      "axios": "^0.27.2",
       "bcrypt": "^5.0.1",
       "chai": "^4.3.6",
       "cookie-parser": "~1.4.4",
@@ -40,6 +48,7 @@ npm manifest:
       "mariadb": "^3.0.0",
       "mocha": "^9.2.2",
       "morgan": "~1.9.1",
+      "nodemailer": "^6.7.5",
       "nyc": "^15.1.0",
       "sequelize": "^6.19.0",
       "sequelize-cli": "^6.4.1",
@@ -487,6 +496,14 @@ Lockfile:
     version "1.0.0"
     resolved "https://registry.yarnpkg.com/at-least-node/-/at-least-node-1.0.0.tgz#602cd4b46e844ad4effc92a8011a3c46e0238dc2"
     integrity sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==
+  
+  axios@^0.27.2:
+    version "0.27.2"
+    resolved "https://registry.yarnpkg.com/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
+    integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==
+    dependencies:
+      follow-redirects "^1.14.9"
+      form-data "^4.0.0"
   
   balanced-match@^1.0.0:
     version "1.0.2"
@@ -1147,6 +1164,11 @@ Lockfile:
     version "5.0.2"
     resolved "https://registry.yarnpkg.com/flat/-/flat-5.0.2.tgz#8ca6fe332069ffa9d324c327198c598259ceb241"
     integrity sha512-b6suED+5/3rTpUBdG1gupIl8MPFCAMA0QXwmljLhvCUKcUvdE4gWky9zpuGCcXHOsz4J9wPGNWq6OKpmIzz3hQ==
+  
+  follow-redirects@^1.14.9:
+    version "1.15.1"
+    resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.1.tgz#0ca6a452306c9b276e4d3127483e29575e207ad5"
+    integrity sha512-yLAMQs+k0b2m7cVxpS1VKJVvoz7SS9Td1zss3XRwXj+ZDH00RJgnuLx7E44wx02kQLrdM3aOOy+FpzS7+8OizA==
   
   foreground-child@^2.0.0:
     version "2.0.0"
@@ -1957,6 +1979,11 @@ Lockfile:
     version "2.0.4"
     resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.4.tgz#f38252370c43854dc48aa431c766c6c398f40476"
     integrity sha512-gbMzqQtTtDz/00jQzZ21PQzdI9PyLYqUSvD0p3naOhX4odFji0ZxYdnVwPTxmSwkmxhcFImpozceidSG+AgoPQ==
+  
+  nodemailer@^6.7.5:
+    version "6.7.5"
+    resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.7.5.tgz#b30b1566f5fa2249f7bd49ced4c58bec6b25915e"
+    integrity sha512-6VtMpwhsrixq1HDYSBBHvW0GwiWawE75dS3oal48VqRhUvKJNnKnJo2RI/bCVQubj1vgrgscMNW4DHaD6xtMCg==
   
   nopt@^5.0.0:
     version "5.0.0"
