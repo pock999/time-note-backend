@@ -18,6 +18,8 @@ module.exports = {
       },
     });
 
+    let returnData;
+
     if (!CWTWeb) {
       CWTWeb = await dbModels.Crawler.create({
         key: 'CWT',
@@ -42,7 +44,7 @@ module.exports = {
 
       for (const element of elementList) {
         const title = $(element).find('.a_c_tit').text();
-        const address = `${$(element).find('.a_c_i')[1].next.data}(${
+        const location = `${$(element).find('.a_c_i')[1].next.data}(${
           $(element).find('.a_c_i')[2].next.data
         })`;
 
@@ -56,8 +58,9 @@ module.exports = {
 
         eventList.push({
           title: `${title} 第一天`,
-          address,
+          location,
           date: formatDate1,
+          type: 'CWT',
         });
 
         const formatDate2 = [
@@ -69,20 +72,33 @@ module.exports = {
 
         eventList.push({
           title: `${title} 第二天`,
-          address,
+          location,
           date: formatDate1,
+          type: 'CWT',
         });
+      }
+
+      returnData = [];
+      for (const event of eventList) {
+        const newEvent = await dbModels.Event.create(event);
+        returnData.push(newEvent);
       }
 
       CWTWeb.getDate = nowTime;
       await CWTWeb.save();
     } else {
-      // TODO: 寫入資料表
+      const events = await dbModels.Event.findAll({
+        type: 'CWT',
+      });
+
+      returnData = JsonReParse(events);
     }
 
     return res.ok({
       message: 'success',
-      data: {},
+      data: returnData.map((item) => ({
+        ..._.pick(item, ['id', 'title', 'location', 'type', 'date']),
+      })),
     });
   },
   // FF
