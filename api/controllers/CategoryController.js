@@ -75,7 +75,9 @@ module.exports = {
     try {
       const { error, value } = Joi.object({
         name: Joi.string().required(),
-        color: Joi.string().default('#9DA6A4'),
+        color: Joi.string()
+          .regex(/^#[A-Fa-f0-9]{6}/)
+          .default('#9DA6A4'),
       }).validate(req.body);
 
       if (error) {
@@ -125,7 +127,9 @@ module.exports = {
       const { error, value } = Joi.object({
         id: Joi.number().integer().required(),
         name: Joi.string().required(),
-        color: Joi.string().default('#9DA6A4'),
+        color: Joi.string()
+          .regex(/^#[A-Fa-f0-9]{6}/)
+          .default('#9DA6A4'),
       }).validate({
         ...req.body,
         ...req.params,
