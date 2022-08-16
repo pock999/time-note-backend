@@ -17,7 +17,7 @@ const callLogin = async ({ email, password }) => {
 describe('=== 新增note - POST /note/ ===', async () => {
   const userData = {
     name: '王小明',
-    email: 'ming1234@google.com',
+    email: 'ming123@google.com',
     password: 'abcd1234',
   };
 
@@ -139,7 +139,6 @@ it('=== 取得note type - GET /note/types ===', async () => {
   await await dbModels.User.destroy({ where: {}, truncate: true });
 });
 
-// TODO: 待更新
 describe('=== 列表note - GET /note/list ===', async () => {
   const now = dayjs();
 
@@ -289,5 +288,74 @@ describe('=== 列表note - GET /note/list ===', async () => {
         expect(res.body.message).to.be.equal('success');
       });
     });
+  });
+});
+
+describe('=== 列表note - GET /note/:id ===', async () => {
+  const now = dayjs();
+
+  const userData = {
+    name: '王小明',
+    email: 'ming123@google.com',
+    password: 'abcd1234',
+  };
+
+  const notesData = Array.from({ length: 25 }, (_, i) => i + 1).map((i) => ({
+    title: `標題${i}`,
+    type: (i % 3) + 1,
+    content: i % 6 === 0 ? '' : `${i},,, ${i},,, ${i}`,
+    timePoint: now.subtract(7 + (30 - i), 'hour'),
+    UserId: 1,
+  }));
+
+  beforeEach(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
+    await dbModels.User.destroy({ where: {}, truncate: true });
+
+    await dbModels.User.create(userData);
+
+    await dbModels.Note.destroy({ where: {}, truncate: true });
+
+    await dbModels.Note.bulkCreate(notesData);
+  });
+
+  afterEach(async function () {
+    await await dbModels.User.destroy({ where: {}, truncate: true });
+    await await dbModels.Note.destroy({ where: {}, truncate: true });
+  });
+
+  it('- 獲取成功', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    const res = await request(app)
+      .get('/note/1')
+      .send({})
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      });
+
+    expect(res.body.data.id).to.be.equal(1);
+    expect(res.body.data.title).to.be.equal(notesData[0].title);
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+  });
+
+  it('- 取得不存在', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    const res = await request(app)
+      .get('/note/100')
+      .send({})
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      });
+
+    expect(res.statusCode).to.be.equal(404);
+    expect(res.body.message).to.be.equal('NotFound.Target.Not.Found');
   });
 });
