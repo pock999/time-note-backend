@@ -1,6 +1,8 @@
 {
   "include": [
-    "api/controllers/AuthController.js"
+    "api/controllers/AuthController.js",
+    "api/controllers/CategoryController.js",
+    "api/controllers/NoteController.js"
   ],
   "reporter": [
     "text"
