@@ -236,12 +236,7 @@ module.exports = {
 
         title: Joi.string().required(),
         type: Joi.number().integer().required(),
-        CategoryId: Joi.number()
-          .integer()
-          .required()
-          .allow(null)
-          .allow('')
-          .default(null),
+        CategoryId: Joi.number().integer().allow(null).allow('').default(null),
         content: Joi.string().required(),
         timePoint: Joi.date().allow(null),
       }).validate({

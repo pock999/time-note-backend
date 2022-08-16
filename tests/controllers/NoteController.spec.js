@@ -291,7 +291,7 @@ describe('=== 列表note - GET /note/list ===', async () => {
   });
 });
 
-describe('=== 列表note - GET /note/:id ===', async () => {
+describe('=== 單個note - GET /note/:id ===', async () => {
   const now = dayjs();
 
   const userData = {
@@ -353,6 +353,92 @@ describe('=== 列表note - GET /note/:id ===', async () => {
       .send({})
       .set({
         Authorization: `Bearer ${authorizationToken}`,
+      });
+
+    expect(res.statusCode).to.be.equal(404);
+    expect(res.body.message).to.be.equal('NotFound.Target.Not.Found');
+  });
+});
+
+describe('=== 更新note - PUT /note/:id ===', async () => {
+  const now = dayjs();
+
+  const userData = {
+    name: '王小明',
+    email: 'ming123@google.com',
+    password: 'abcd1234',
+  };
+
+  const notesData = Array.from({ length: 25 }, (_, i) => i + 1).map((i) => ({
+    title: `標題${i}`,
+    type: (i % 3) + 1,
+    content: i % 6 === 0 ? '' : `${i},,, ${i},,, ${i}`,
+    timePoint: now.subtract(7 + (30 - i), 'hour'),
+    UserId: 1,
+  }));
+
+  beforeEach(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
+    await dbModels.User.destroy({ where: {}, truncate: true });
+
+    await dbModels.User.create(userData);
+
+    await dbModels.Note.destroy({ where: {}, truncate: true });
+
+    await dbModels.Note.bulkCreate(notesData);
+  });
+
+  afterEach(async function () {
+    await await dbModels.User.destroy({ where: {}, truncate: true });
+    await await dbModels.Note.destroy({ where: {}, truncate: true });
+  });
+
+  it('- 更新成功', async () => {
+    const timePoint = dayjs().format('YYYY-MM-DD HH:mm:ss');
+
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    const res = await request(app)
+      .put('/note/1')
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      })
+      .send({
+        title: '更新標題',
+        type: 1,
+        content: '更新內容',
+        timePoint,
+      });
+
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+
+    expect(res.body.data.title).to.be.equal('更新標題');
+    expect(res.body.data.type).to.be.equal(1);
+    expect(res.body.data.content).to.be.equal('更新內容');
+    expect(res.body.data.timePoint).to.be.equal(timePoint);
+  });
+
+  it('- 更新失敗(找不到目標)', async () => {
+    const timePoint = dayjs().format('YYYY-MM-DD HH:mm:ss');
+
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    const res = await request(app)
+      .put('/note/1000')
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      })
+      .send({
+        title: '更新標題',
+        type: 1,
+        content: '更新內容',
+        timePoint,
       });
 
     expect(res.statusCode).to.be.equal(404);
