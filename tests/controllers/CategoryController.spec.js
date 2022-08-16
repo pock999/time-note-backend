@@ -76,8 +76,6 @@ describe('=== 列表Category - GET /category/list ===', async () => {
 });
 
 describe('=== 單一Category - GET /category/:id ===', async () => {
-  const now = dayjs();
-
   const userData = {
     name: '王小明',
     email: 'ming1234@google.com',
@@ -149,5 +147,84 @@ describe('=== 單一Category - GET /category/:id ===', async () => {
 
     expect(res.statusCode).to.be.equal(404);
     expect(res.body.message).to.be.equal('NotFound.Target.Not.Found');
+  });
+});
+
+describe('=== 新增Category - POST /category ===', async () => {
+  const userData = {
+    name: '王小明',
+    email: 'ming1234@google.com',
+    password: 'abcd1234',
+  };
+
+  const categorysData = [
+    {
+      name: '重要',
+      color: '#F83637',
+    },
+    {
+      name: '待辦',
+      color: '#AADFC9',
+    },
+    {
+      name: '閱讀清單',
+      color: '#84C9E2',
+    },
+  ];
+
+  beforeEach(async () => {
+    await dbModels.sequelize.sync({ force: true, logging: false });
+
+    await dbModels.User.destroy({ where: {}, truncate: true });
+
+    const user = await dbModels.User.create(userData);
+
+    await dbModels.Category.destroy({ where: {}, truncate: true });
+
+    await dbModels.Category.bulkCreate(
+      categorysData.map((item) => ({ ...item, UserId: user.id }))
+    );
+  });
+
+  afterEach(async function () {
+    await await dbModels.User.destroy({ where: {}, truncate: true });
+    await await dbModels.Category.destroy({ where: {}, truncate: true });
+  });
+
+  it('- 新增成功', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    const res = await request(app)
+      .post('/category')
+      .send({
+        name: '測試',
+        color: '#111111',
+      })
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      });
+
+    expect(res.statusCode).to.be.equal(200);
+    expect(res.body.message).to.be.equal('success');
+    expect(res.body.data.name).to.be.equal('測試');
+    expect(res.body.data.color).to.be.equal('#111111');
+  });
+
+  it('- 新增失敗(重複)', async () => {
+    const authorizationToken = await callLogin({
+      ..._.pick(userData, ['email', 'password']),
+    });
+
+    const res = await request(app)
+      .post('/category')
+      .send(categorysData[0])
+      .set({
+        Authorization: `Bearer ${authorizationToken}`,
+      });
+
+    expect(res.statusCode).to.be.equal(400);
+    expect(res.body.message).to.be.equal('BadRequest.Data.Duplicated');
   });
 });
