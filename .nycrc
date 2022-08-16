@@ -1,0 +1,15 @@
+{
+  "include": [
+    "api/controllers/AuthController.js",
+    "api/controllers/CategoryController.js",
+    "api/controllers/NoteController.js"
+  ],
+  "reporter": [
+    "text"
+  ],
+  "check-coverage": true,  
+  "lines": 10,
+  "statements": 10,
+  "functions": 10,
+  "branches": 10
+}
