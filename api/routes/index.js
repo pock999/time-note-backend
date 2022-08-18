@@ -5,6 +5,10 @@ const AuthRouter = require('./AuthRouter');
 const NoteRouter = require('./NoteRouter');
 const CategoryRouter = require('./CategoryRouter');
 
+const HomeController = require('../controllers/HomeController');
+
+router.get('/info', HomeController.Info);
+
 router.use('/auth', AuthRouter);
 router.use('/note', NoteRouter);
 router.use('/category', CategoryRouter);
