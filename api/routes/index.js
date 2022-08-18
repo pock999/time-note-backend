@@ -6,6 +6,10 @@ const NoteRouter = require('./NoteRouter');
 const CategoryRouter = require('./CategoryRouter');
 const FFRouter = require('./FFRouter');
 
+const HomeController = require('../controllers/HomeController');
+
+router.get('/info', HomeController.Info);
+
 router.use('/auth', AuthRouter);
 router.use('/note', NoteRouter);
 router.use('/category', CategoryRouter);
