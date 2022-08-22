@@ -1,4 +1,4 @@
 module.exports = {
-  ...require('./config.local'),
-  // ...require('./config.prod'),
+  // ...require('./config.local'),
+  ...require('./config.prod'),
 };
