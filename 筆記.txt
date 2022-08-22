@@ -3,3 +3,5 @@ heroku run bash --app myaplication => 進入該 app 的 bash
 git push heroku yourlocalbranch:main => 推版
 
 git reset HEAD~ => 本地退版
+
+連接heroku資料庫 https://dev.to/prisma/how-to-setup-a-free-postgresql-database-on-heroku-1dc1
