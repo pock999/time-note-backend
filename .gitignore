@@ -1,6 +1,6 @@
 /node_modules/
 /node_modules/*
 
-/config/config.js
+/config/config.local.js
 /.nyc_output/
 /.nyc_output/*
