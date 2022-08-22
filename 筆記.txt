@@ -1,0 +1,3 @@
+heroku run bash --app myaplication => 進入該 app 的 bash
+
+git push heroku yourlocalbranch:main => 推版
