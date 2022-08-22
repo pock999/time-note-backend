@@ -2,5 +2,6 @@
 /node_modules/*
 
 /config/config.js
+/config/config.prod.js
 /.nyc_output/
 /.nyc_output/*
