@@ -137,14 +137,14 @@ module.exports = {
       // 行程(提醒), timePoint為必填欄位
       if (type === 2 && !timePoint) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'timePoint are required',
+          error: '時間點為必填欄位',
         });
       }
 
       // 行程(提醒), timePoint不可以比now還以前
       if (type === 2 && dayjs() > dayjs(timePoint)) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'timePoint are need later than now',
+          error: '時間點必須晚於當前時間',
         });
       }
 
@@ -203,7 +203,7 @@ module.exports = {
 
       if (!note) {
         throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
-          error: 'the note not found',
+          error: '找不到該目標筆記',
         });
       }
 
@@ -263,21 +263,21 @@ module.exports = {
 
       if (!note) {
         throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
-          error: 'the note not found',
+          error: '找不到該目標筆記',
         });
       }
 
       // 行程(提醒), timePoint為必填欄位
       if (type === 2 && !timePoint) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'timePoint are required',
+          error: '時間點為必填欄位',
         });
       }
 
       // 行程(提醒), timePoint不可以比now還以前
       if (type === 2 && dayjs() > dayjs(timePoint)) {
         throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
-          error: 'timePoint are need later than now',
+          error: '時間點必須晚於當前時間',
         });
       }
 
@@ -335,7 +335,7 @@ module.exports = {
 
       if (!note) {
         throw ReturnMsg.NOT_FOUND.TARGET_NOT_FOUND({
-          error: 'the note not found',
+          error: '找不到該目標筆記',
         });
       }
 

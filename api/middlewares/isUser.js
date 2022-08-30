@@ -14,7 +14,7 @@ module.exports = async (req, res, next) => {
 
     if (!user) {
       throw ReturnMsg.AUTH.USER_NO_PERMISSION({
-        error: 'the user not found',
+        error: '找不到該使用者',
       });
     }
 

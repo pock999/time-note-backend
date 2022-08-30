@@ -29,7 +29,7 @@ module.exports = {
 
       if (!user) {
         throw ReturnMsg.AUTH.USER_NOT_FOUND({
-          error: 'the user not found',
+          error: '找不到該使用者',
         });
       }
 
@@ -37,7 +37,7 @@ module.exports = {
 
       if (!isVerify) {
         throw ReturnMsg.AUTH.INVALID_PASSWORD({
-          error: 'password error',
+          error: '帳號或密碼錯誤',
         });
       }
 
@@ -146,7 +146,7 @@ module.exports = {
 
       if (isDuplicate) {
         throw ReturnMsg.AUTH.EMAIL_HAS_EXISTED({
-          error: 'email is duplicate',
+          error: 'Email 已被註冊',
         });
       }
 

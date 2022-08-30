@@ -21,13 +21,13 @@ module.exports = async (req, res, next) => {
   } catch (e) {
     // if (e instanceof TokenExpiredError) {
     //   return res.error(ReturnMsg.AUTH.USER_TOKEN_EXPIRED({
-    //     error: 'token expired',
+    //     error: 'Token 過期',
     //   }))
     // }
 
     return res.error(
       ReturnMsg.AUTH.USER_TOKEN_EXPIRED({
-        error: 'token expired',
+        error: 'Token 過期',
       })
     );
   }
