@@ -47,19 +47,19 @@ module.exports = {
   SUCCESS: {},
   NOT_FOUND: {
     TARGET_NOT_FOUND: (obj) => ({
-      message: 'NotFound.Target.Not.Found',
+      type: 'NotFound.Target.Not.Found',
       code: 404,
       payload: obj,
     }),
   },
   BAD_REQUEST: {
     PARAMETER_FORMAT_INVALID: (obj) => ({
-      message: 'BadRequest.Parameter.Format.Invalid',
+      type: 'BadRequest.Parameter.Format.Invalid',
       code: 400,
       payload: obj,
     }),
     DATA_DUPLICATED: (obj) => ({
-      message: 'BadRequest.Data.Duplicated',
+      type: 'BadRequest.Data.Duplicated',
       code: 400,
       payload: obj,
     }),
