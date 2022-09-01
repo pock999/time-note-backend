@@ -52,6 +52,14 @@ module.exports = (req, res, error) => {
       });
     }
 
+    if (error.name === 'JsonWebTokenError') {
+      return res.badReq({
+        type: 'BadRequest',
+        message: 'Token.Not.Exist',
+        payload: error,
+      });
+    }
+
     return res.serverErr(e);
   } catch (e) {
     return res.serverErr(e);

@@ -18,6 +18,12 @@ module.exports = async (req, res, next) => {
       });
     }
 
+    if (config.mail.isNeedActivate && !user.isActivate) {
+      throw ReturnMsg.AUTH.USER_ACCESS_DENIED({
+        error: '帳號未啟用',
+      });
+    }
+
     req.user = JsonReParse(user);
 
     next();

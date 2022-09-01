@@ -64,5 +64,11 @@ module.exports = {
       payload: obj,
     }),
   },
-  ERROR: {},
+  ERROR: {
+    SERVICE_NOT_ALLOW: () => ({
+      type: 'Error.Service.Not.Allow',
+      code: 500,
+      payload: obj,
+    }),
+  },
 };

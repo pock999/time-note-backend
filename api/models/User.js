@@ -23,6 +23,18 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(2000),
         allowNull: true,
       },
+
+      // 是否開通
+      isActivate: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+
+      // 開通碼
+      activateCode: {
+        type: DataTypes.STRING(2000),
+        allowNull: true,
+      },
     },
     {
       // options

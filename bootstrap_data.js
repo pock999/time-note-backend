@@ -7,6 +7,7 @@ module.exports = async () => {
     name: '王小明',
     email: 'ming123@google.com',
     password: 'abcd1234',
+    isActivate: true,
   });
 
   const CategoriesName = [

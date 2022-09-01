@@ -1,5 +1,7 @@
 module.exports = {
   port: 3000,
+  frontendURL: 'http://localhost:9000', // 前端 URL
+
   bootstrapData: false,
 
   // postgres
@@ -42,11 +44,17 @@ module.exports = {
 
   jwt: {
     secret: 'secret',
-    expiresIn: '15m', // 15分
+    expiresIn: '1h', // 1小時
+  },
+
+  // 帳號激活用 / 重設密碼
+  activateJWT: {
+    secret: 'secret',
+    expiresIn: '15m',
   },
 
   mail: {
-    isActivate: false,
+    isNeedActivate: false,
     email: '<email account>',
     password: '<email password>',
   },

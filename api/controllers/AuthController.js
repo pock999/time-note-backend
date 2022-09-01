@@ -41,6 +41,12 @@ module.exports = {
         });
       }
 
+      if (config.mail.isNeedActivate && !user.isActivate) {
+        throw ReturnMsg.AUTH.USER_ACCESS_DENIED({
+          error: '帳號未啟用',
+        });
+      }
+
       user = {
         ..._.pick(JsonReParse(user), ['id', 'email', 'name']),
       };
@@ -150,21 +156,86 @@ module.exports = {
         });
       }
 
-      // TODO: 註冊信
+      const passToken = jwt.sign({ email, name }, config.activateJWT.secret, {
+        expiresIn: config.activateJWT.expiresIn,
+      });
 
       let user = await dbModels.User.create({
         name,
         email,
         password,
+        // 有開通寄信，帳號預設未開通
+        isActivate: !config.mail.isNeedActivate,
+        activateCode: config.mail.isNeedActivate ? passToken : null,
       });
 
+      if (config.mail.isNeedActivate) {
+        const content = `
+          感謝您註冊 Time-Note 帳號!!!<br/>
+          點選以下連結已完成註冊<br/>
+          <a target="_blank" href="${config.frontendURL}/activate?token=${passToken}"> --按我-- </a>
+        `;
+        await MailService.sendEmail('註冊信', content, user);
+      }
+
       user = {
-        ..._.pick(JsonReParse(user), ['id', 'email', 'name']),
+        ..._.pick(JsonReParse(user), ['id', 'email', 'name', 'isActivate']),
       };
 
       return res.ok({
         message: 'success',
-        data: user,
+        data: {
+          ...user,
+          isNeedActivate: config.mail.isNeedActivate,
+        },
+      });
+    } catch (e) {
+      console.log('error => ', e);
+      return res.error(e);
+    }
+  },
+
+  // 啟用
+  async Activate(req, res) {
+    try {
+      const { error, value } = Joi.object({
+        token: Joi.string().required(),
+      }).validate(req.body);
+
+      if (error) {
+        throw ReturnMsg.BAD_REQUEST.PARAMETER_FORMAT_INVALID({
+          error: error.message,
+        });
+      }
+
+      const { token } = value;
+
+      const findUser = await dbModels.User.findOne({
+        where: {
+          activateCode: token,
+        },
+      });
+
+      if (!findUser) {
+        throw ReturnMsg.AUTH.USER_NOT_FOUND({
+          error: '找不到該使用者或是開通碼',
+        });
+      }
+
+      if (findUser.isActivate) {
+        throw ReturnMsg.AUTH.USER_ACCESS_DENIED({
+          error: '該帳號已開通',
+        });
+      }
+
+      findUser.isActivate = true;
+      findUser.activateCode = null;
+
+      await findUser.save();
+
+      return res.ok({
+        message: 'success',
+        data: null,
       });
     } catch (e) {
       console.log('error => ', e);
@@ -185,9 +256,47 @@ module.exports = {
         });
       }
 
-      // TODO: find by email
+      const { email } = value;
 
-      // TODO: sign 一組大約 15m 的 jwtToken
+      const findUser = await dbModels.User.findOne({
+        where: {
+          email,
+        },
+      });
+
+      if (!findUser) {
+        throw ReturnMsg.AUTH.USER_NOT_FOUND({
+          error: '找不到該使用者',
+        });
+      }
+
+      const passToken = jwt.sign(
+        JsonReParse(findUser),
+        config.activateJWT.secret,
+        {
+          expiresIn: config.activateJWT.expiresIn,
+        }
+      );
+
+      if (!config.mail.isNeedActivate) {
+        throw ReturnMsg.ERROR.SERVICE_NOT_ALLOW({
+          error: '該服務未開啟',
+        });
+      }
+
+      const content = `
+          點擊進入重設密碼<br/>
+          <a target="_blank" href="${config.frontendURL}/reset-password?token=${passToken}"> --按我-- </a>
+        `;
+      await MailService.sendEmail('忘記密碼', content, findUser);
+
+      findUser.resetToken = passToken;
+      await findUser.save();
+
+      return res.ok({
+        message: 'success',
+        data: null,
+      });
     } catch (e) {
       console.log('error => ', e);
       return res.error(e);
@@ -208,9 +317,32 @@ module.exports = {
         });
       }
 
-      // TODO: 檢查token是否過期
+      if (!config.mail.isNeedActivate) {
+        throw ReturnMsg.ERROR.SERVICE_NOT_ALLOW({
+          error: '該服務未開啟',
+        });
+      }
 
-      // TODO: reset password
+      // 檢查token是否過期
+      const { token, password } = value;
+      const decodeUser = jwt.verify(token, config.activateJWT.secret);
+
+      // reset password
+      const findUser = await dbModels.User.findOne({
+        where: {
+          resetToken: token,
+        },
+      });
+
+      findUser.password = password;
+      findUser.resetToken = null;
+
+      await findUser.save();
+
+      return res.ok({
+        message: 'success',
+        data: null,
+      });
     } catch (e) {
       console.log('error => ', e);
       return res.error(e);
